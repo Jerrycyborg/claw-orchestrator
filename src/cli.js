@@ -14,23 +14,23 @@ if (cmd === "run") {
   const execute = hasFlag(args, "--execute");
   const execMode = readFlag(args, "--mode") || "simulate";
   const approveSensitive = hasFlag(args, "--approve-sensitive");
+  const summary = hasFlag(args, "--summary");
 
   if (!prompt.trim()) {
-    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw]");
+    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--summary]");
     process.exit(1);
   }
   const run = createRun(prompt, { handoffDir, approveSensitive });
   const out = { run };
 
-  if (sync && run.status !== "blocked") {
-    out.sync = syncRunToAahp(run, { handoffDir });
-  }
+  if (sync && run.status !== "blocked") out.sync = syncRunToAahp(run, { handoffDir });
+  if (execute && run.status !== "blocked") out.execution = await executeRun(run, { mode: execMode });
 
-  if (execute && run.status !== "blocked") {
-    out.execution = await executeRun(run, { mode: execMode });
+  if (summary) {
+    console.log(formatSummary(out));
+  } else {
+    console.log(JSON.stringify(out, null, 2));
   }
-
-  console.log(JSON.stringify(out, null, 2));
   process.exit(0);
 }
 
@@ -38,9 +38,10 @@ if (cmd === "auto") {
   const prompt = readFlag(args, "--prompt") || "";
   const handoffDir = readFlag(args, "--handoff-dir") || ".ai/handoff";
   const approveSensitive = hasFlag(args, "--approve-sensitive");
+  const summary = hasFlag(args, "--summary");
 
   if (!prompt.trim()) {
-    console.log("Usage: orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive]");
+    console.log("Usage: orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--summary]");
     process.exit(1);
   }
 
@@ -52,7 +53,11 @@ if (cmd === "auto") {
     out.execution = await executeRun(run, { mode: "openclaw" });
   }
 
-  console.log(JSON.stringify(out, null, 2));
+  if (summary) {
+    console.log(formatSummary(out));
+  } else {
+    console.log(JSON.stringify(out, null, 2));
+  }
   process.exit(0);
 }
 
@@ -90,7 +95,7 @@ if (cmd === "aahp-check") {
   process.exit(0);
 }
 
-console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
+console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--summary]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--summary]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
 
 function readFlag(argv, flag) {
   const idx = argv.indexOf(flag);
@@ -100,4 +105,32 @@ function readFlag(argv, flag) {
 
 function hasFlag(argv, flag) {
   return argv.includes(flag);
+}
+
+function formatSummary(out) {
+  const run = out.run || {};
+  if (run.status === "blocked") {
+    return [
+      `❌ Run blocked`,
+      `Run ID: ${run.id}`,
+      `Reason: ${run.policy?.reason || "policy gate"}`
+    ].join("\n");
+  }
+
+  const ex = out.execution || {};
+  const lines = [
+    `✅ Run ${ex.status || run.status}`,
+    `Run ID: ${run.id}`,
+    `Intent: ${run.intent || "n/a"}`,
+    `Confidence: ${run.confidenceTag || "n/a"} (${run.confidence ?? "n/a"})`,
+    `Mode: ${ex.executionMode || "n/a"}`,
+    `Stages:`
+  ];
+
+  for (const s of ex.stages || []) {
+    const roles = (s.results || []).map((r) => `${r.role}:${r.status}`).join(", ");
+    lines.push(`- stage ${s.stage} [${s.mode}] ${roles}`);
+  }
+
+  return lines.join("\n");
 }

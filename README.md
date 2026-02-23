@@ -41,6 +41,7 @@ It is designed to work with **AAHP-style handoffs** and supports both:
 - Enforce review gates before task completion
 - Maintain traceable run logs (who did what, when, with what confidence)
 - Add policy controls for sensitive actions
+- Auto-trigger from OpenClaw session when installed as local skill (`skill/claw-orchestrator`)
 
 ---
 
@@ -86,24 +87,17 @@ Still required (next):
 
 ---
 
-## ▶️ Getting started (prototype)
+## ▶️ Getting started (out-of-box)
 ```bash
 # 1) clone repo
-# 2) run unit tests
-npm test
+# 2) one-step setup (installs local skill + scripts)
+bash ./scripts/setup.sh
 
-# 3) one-command end-to-end mode (recommended)
-node src/cli.js auto --prompt "Implement Firestore rules and review security"
+# 3) run end-to-end orchestration with clean summary
+./scripts/orchestrate.sh "Implement Firestore rules and review security"
 
-# 4) check runs
+# 4) inspect runs
 node src/cli.js status
-
-# 5) optional manual mode
-node src/cli.js run --prompt "Implement Firestore rules and review security" --sync-aahp --execute --mode openclaw
-
-# 6) optional custom bridge command template
-export OPENCLAW_ROLE_CMD='openclaw sessions send --label pool-{role} --message "{rolePrompt}"'
-node src/cli.js auto --prompt "Implement Firestore rules and review security"
 ```
 
 ---
