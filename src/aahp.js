@@ -58,3 +58,27 @@ export function confidenceTag(value) {
   if (value >= 0.6) return "Assumed";
   return "Unknown";
 }
+
+export function updateStatusWithRun(inputDir, run) {
+  const dir = resolveHandoffDir(inputDir);
+  fs.mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, "STATUS.md");
+  const prev = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "# STATUS\n\n";
+
+  const markerStart = "<!-- ORCHESTRATOR_LAST_RUN_START -->";
+  const markerEnd = "<!-- ORCHESTRATOR_LAST_RUN_END -->";
+  const block = `${markerStart}\n## Orchestrator Last Run\n- Run ID: ${run.id}\n- Status: ${run.status}\n- Intent: ${run.intent || "n/a"}\n- Completed At: ${run.completedAt || new Date().toISOString()}\n${markerEnd}`;
+
+  let next = prev;
+  const startIdx = prev.indexOf(markerStart);
+  const endIdx = prev.indexOf(markerEnd);
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    const tailStart = endIdx + markerEnd.length;
+    next = `${prev.slice(0, startIdx).trimEnd()}\n\n${block}\n${prev.slice(tailStart)}`;
+  } else {
+    next = `${prev.trimEnd()}\n\n---\n\n${block}\n`;
+  }
+
+  fs.writeFileSync(file, next);
+  return file;
+}

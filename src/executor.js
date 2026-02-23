@@ -36,24 +36,39 @@ export async function executeRun(run, options = {}) {
     };
 
     for (const role of stage.roles) {
-      const result = await executeRole(
-        /** @type {any} */ ({
-          role,
-          prompt: run.prompt,
-          intent: run.intent,
-          runId: run.id,
-          stageMode: stage.mode
-        }),
-        options
-      );
+      const maxRetries = Number(options.maxRetries ?? 1);
+      let attempt = 0;
+      /** @type {any} */
+      let result = null;
+
+      while (attempt <= maxRetries) {
+        result = await executeRole(
+          /** @type {any} */ ({
+            role,
+            prompt: run.prompt,
+            intent: run.intent,
+            runId: run.id,
+            stageMode: stage.mode,
+            attempt
+          }),
+          options
+        );
+
+        if (result.status !== "failed") break;
+        attempt += 1;
+      }
+
+      if (result) result.attempts = attempt + 1;
       stageRecord.results.push(result);
 
-      if (result.status === "failed") {
+      if (result && result.status === "failed") {
         stageRecord.status = "failed";
         stageRecord.completedAt = new Date().toISOString();
+        stageRecord.escalation = `Role '${role}' failed after ${attempt + 1} attempt(s)`;
         execution.stages.push(stageRecord);
         execution.status = "failed";
         execution.completedAt = new Date().toISOString();
+        execution.escalation = stageRecord.escalation;
         saveRun(execution);
         return execution;
       }

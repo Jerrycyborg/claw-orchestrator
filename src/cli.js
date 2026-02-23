@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createRun, syncRunToAahp } from "./orchestrator.js";
 import { listRuns, getRun } from "./run-store.js";
-import { readHandoffSnapshot } from "./aahp.js";
+import { readHandoffSnapshot, updateStatusWithRun } from "./aahp.js";
 import { executeRun } from "./executor.js";
 import { parseChannelFlag } from "./channel-policy.js";
 import { readHookEvent, eventToRunInput } from "./session-hook.js";
@@ -15,19 +15,23 @@ if (cmd === "run") {
   const sync = hasFlag(args, "--sync-aahp");
   const execute = hasFlag(args, "--execute");
   const execMode = readFlag(args, "--mode") || "simulate";
+  const maxRetries = Number(readFlag(args, "--max-retries") || 1);
   const approveSensitive = hasFlag(args, "--approve-sensitive");
   const summary = hasFlag(args, "--summary");
   const channelKind = parseChannelFlag(readFlag(args, "--channel") || "direct");
 
   if (!prompt.trim()) {
-    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--channel direct|group] [--summary]");
+    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]");
     process.exit(1);
   }
   const run = createRun(prompt, { handoffDir, approveSensitive, channelContext: { kind: channelKind } });
   const out = { run };
 
   if (sync && run.status !== "blocked") out.sync = syncRunToAahp(run, { handoffDir });
-  if (execute && run.status !== "blocked") out.execution = await executeRun(run, { mode: execMode });
+  if (execute && run.status !== "blocked") {
+    out.execution = await executeRun(run, { mode: execMode, maxRetries });
+    out.statusUpdate = { statusFile: updateStatusWithRun(handoffDir, out.execution) };
+  }
 
   if (summary) {
     console.log(formatSummary(out));
@@ -54,7 +58,8 @@ if (cmd === "auto") {
 
   if (run.status !== "blocked") {
     out.sync = syncRunToAahp(run, { handoffDir });
-    out.execution = await executeRun(run, { mode: "openclaw" });
+    out.execution = await executeRun(run, { mode: "openclaw", maxRetries: 1 });
+    out.statusUpdate = { statusFile: updateStatusWithRun(handoffDir, out.execution) };
   }
 
   if (summary) {
@@ -92,7 +97,8 @@ if (cmd === "hook") {
 
   if (run.status !== "blocked") {
     out.sync = syncRunToAahp(run, { handoffDir });
-    out.execution = await executeRun(run, { mode: "openclaw" });
+    out.execution = await executeRun(run, { mode: "openclaw", maxRetries: 1 });
+    out.statusUpdate = { statusFile: updateStatusWithRun(handoffDir, out.execution) };
   }
 
   console.log(formatSummary(out));
@@ -133,7 +139,7 @@ if (cmd === "aahp-check") {
   process.exit(0);
 }
 
-console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--channel direct|group] [--summary]\n  orchestrator hook [--event-file event.json|stdin] [--prompt \"...\"] [--approve-sensitive]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
+console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator hook [--event-file event.json|stdin] [--prompt \"...\"] [--approve-sensitive]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
 
 function readFlag(argv, flag) {
   const idx = argv.indexOf(flag);
@@ -167,9 +173,11 @@ function formatSummary(out) {
   ];
 
   for (const s of ex.stages || []) {
-    const roles = (s.results || []).map((r) => `${r.role}:${r.status}`).join(", ");
+    const roles = (s.results || []).map((r) => `${r.role}:${r.status}(x${r.attempts || 1})`).join(", ");
     lines.push(`- stage ${s.stage} [${s.mode}] ${roles}`);
   }
+
+  if (ex.escalation) lines.push(`Escalation: ${ex.escalation}`);
 
   return lines.join("\n");
 }
