@@ -50,9 +50,10 @@ const synced = syncRunToAahp(run, { handoffDir: handoff });
 assert.ok(fs.existsSync(synced.logFile));
 assert.ok(fs.existsSync(synced.nextActionsFile));
 
-const executed = await executeRun(run, { simulateDelayMs: 1 });
+const executed = await executeRun(run, { simulateDelayMs: 1, mode: "simulate" });
 assert.equal(executed.status, "completed");
 assert.ok(Array.isArray(executed.stages));
 assert.ok(executed.stages.length >= 1);
+assert.equal(executed.executionMode, "simulate");
 
 console.log("All tests passed ✅");

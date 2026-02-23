@@ -13,5 +13,23 @@
 - Ops joins when prompt is deployment/security/config heavy.
 
 ## Execution Modes
-- Stateless mode (current default)
-- Persistent role session mode (when channel thread hooks are available)
+- `simulate` (default): local adapter for deterministic dry-runs
+- `openclaw`: bridge adapter that can execute role calls through OpenClaw CLI hooks
+- Persistent role session mode (future when runtime thread hooks are available)
+
+## OpenClaw Adapter Bridge
+`openclaw` mode supports two levels:
+1. Probe mode (default): verifies OpenClaw reachability via `openclaw status`
+2. Command bridge mode: set `OPENCLAW_ROLE_CMD` template for real role execution.
+
+Template placeholders:
+- `{role}`
+- `{prompt}`
+- `{intent}`
+- `{runId}`
+
+Example:
+```bash
+export OPENCLAW_ROLE_CMD='openclaw sessions send --label pool-{role} --message "{prompt}"'
+node src/cli.js run --prompt "Implement feature X" --execute --mode openclaw
+```

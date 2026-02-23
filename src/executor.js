@@ -1,8 +1,5 @@
 import { saveRun } from "./run-store.js";
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { getRoleExecutor } from "./adapters/index.js";
 
 export async function executeRun(run, options = {}) {
   const startedAt = new Date().toISOString();
@@ -10,9 +7,11 @@ export async function executeRun(run, options = {}) {
     ...run,
     status: "running",
     startedAt,
+    executionMode: options.mode || "simulate",
     stages: []
   };
 
+  const executeRole = getRoleExecutor(options.mode);
   saveRun(execution);
 
   for (const stage of run.pipeline || []) {
@@ -25,20 +24,33 @@ export async function executeRun(run, options = {}) {
       results: []
     };
 
-    // Stateless simulation hook (replace with real adapter in next iteration)
     for (const role of stage.roles) {
-      await wait(options.simulateDelayMs ?? 50);
-      stageRecord.results.push({
-        role,
-        status: "ok",
-        note: `Executed role '${role}' in ${stage.mode} mode (simulated)`
-      });
+      const result = await executeRole(
+        {
+          role,
+          prompt: run.prompt,
+          intent: run.intent,
+          runId: run.id,
+          stageMode: stage.mode
+        },
+        options
+      );
+      stageRecord.results.push(result);
+
+      if (result.status === "failed") {
+        stageRecord.status = "failed";
+        stageRecord.completedAt = new Date().toISOString();
+        execution.stages.push(stageRecord);
+        execution.status = "failed";
+        execution.completedAt = new Date().toISOString();
+        saveRun(execution);
+        return execution;
+      }
     }
 
     stageRecord.status = "completed";
     stageRecord.completedAt = new Date().toISOString();
     execution.stages.push(stageRecord);
-
     saveRun(execution);
   }
 

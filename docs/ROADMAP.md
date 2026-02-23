@@ -31,4 +31,5 @@
 ## Phase 5 - Execution Runtime
 - [x] Run state transitions (planned/running/completed/blocked)
 - [x] Stateless role executor adapter (simulation)
-- [ ] OpenClaw session/tool execution adapters
+- [x] OpenClaw adapter bridge (`--mode openclaw` + command template)
+- [ ] Native OpenClaw API integration (without shell bridge)
