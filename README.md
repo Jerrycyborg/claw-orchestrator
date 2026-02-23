@@ -22,9 +22,14 @@ It is designed to work with **AAHP-style handoffs** and supports both:
 - Project scaffold created
 - Initial routing config added
 - Architecture + roadmap docs added
+- Phase 1 core implemented:
+  - prompt intent classifier
+  - pipeline router (sequential + parallel)
+  - run store + run trace output
+  - CLI (`run`, `status`)
 - Git repository initialized
 
-> This is an **MVP bootstrap**, not yet production-ready.
+> This is now a **working Phase 1 prototype** (still not production-ready).
 
 ---
 
@@ -69,16 +74,19 @@ Still required (next):
 
 ---
 
-## ▶️ Getting started (bootstrap)
+## ▶️ Getting started (prototype)
 ```bash
 # 1) clone repo
-# 2) inspect roadmap
-cat docs/ROADMAP.md
+# 2) run unit tests
+npm test
 
-# 3) inspect architecture
-cat docs/ARCHITECTURE.md
+# 3) plan a run from a prompt
+node src/cli.js run --prompt "Implement Firestore rules and review security"
 
-# 4) copy config template
+# 4) inspect recent planned runs
+node src/cli.js status
+
+# 5) copy config template for future extensions
 cp config/orchestrator.example.yaml config/orchestrator.yaml
 ```
 
