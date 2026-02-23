@@ -2,21 +2,87 @@
 
 🧠 Multi-agent orchestration layer for OpenClaw.
 
-## Goal
-Coordinate role-based agent pipelines (Researcher, Architect, Implementer, Reviewer, Ops) from a single prompt with clear routing, handoffs, and auditability.
+## 🚀 What this project is
+`claw-orchestrator` is a standalone project that coordinates specialized agent roles from a single prompt and executes a predictable pipeline.
 
-## MVP Scope
-- Prompt classifier → route to role pipeline
-- AAHP-compatible handoff writer
-- Run trace log (who did what, when)
-- Policy hooks (block on high-risk findings)
-- Simple CLI to start/inspect runs
+Default role set:
+- 🔭 Researcher
+- 🏛️ Architect
+- ⚙️ Implementer
+- 💬 Reviewer
+- 🛡️ Ops
 
-## Project Structure
-- `docs/` architecture, roadmap, decisions
-- `src/` orchestrator core
-- `config/` routing and policy configs
-- `scripts/` developer utilities
+It is designed to work with **AAHP-style handoffs** and supports both:
+- Stateless execution (current safe default)
+- Persistent role-session execution (when runtime supports it)
 
-## Status
-MVP bootstrap initialized.
+---
+
+## ✅ Current status
+- Project scaffold created
+- Initial routing config added
+- Architecture + roadmap docs added
+- Git repository initialized
+
+> This is an **MVP bootstrap**, not yet production-ready.
+
+---
+
+## 🧩 Use cases
+- Route prompts to the right role sequence automatically
+- Enforce review gates before task completion
+- Maintain traceable run logs (who did what, when, with what confidence)
+- Add policy controls for sensitive actions
+
+---
+
+## 🛠️ Planned MVP features
+- Prompt intent classifier
+- Role pipeline router (sequential + parallel branches)
+- Retry/escalation policy
+- Run state and trace storage
+- AAHP handoff read/write manager
+- CLI commands:
+  - `orchestrator run`
+  - `orchestrator status`
+
+---
+
+## 🔒 Security posture (current)
+Implemented now:
+- `.gitignore` for common local/secrets artifacts
+- No credentials in source files
+
+Still required (next):
+- Secret scanning in CI (e.g., gitleaks)
+- Basic `SECURITY.md` + reporting process
+- Optional pre-commit checks
+
+---
+
+## 📁 Project structure
+- `docs/` architecture, roadmap, design notes
+- `src/` orchestrator core (to be implemented)
+- `config/` routing and policy configuration
+- `scripts/` local helper scripts
+- `.github/workflows/` CI/security checks
+
+---
+
+## ▶️ Getting started (bootstrap)
+```bash
+# 1) clone repo
+# 2) inspect roadmap
+cat docs/ROADMAP.md
+
+# 3) inspect architecture
+cat docs/ARCHITECTURE.md
+
+# 4) copy config template
+cp config/orchestrator.example.yaml config/orchestrator.yaml
+```
+
+---
+
+## 🗺️ Next step
+Implement Phase 1 core orchestrator engine from `docs/ROADMAP.md`.
