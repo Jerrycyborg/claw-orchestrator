@@ -18,8 +18,8 @@
     "test": "node src/test.js"
   },
   "devDependencies": {
-    "typescript": "^5.9.2",
-    "@types/node": "^24.3.0"
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
   },
   "keywords": [
     "openclaw",
@@ -27,5 +27,8 @@
     "multi-agent",
     "aahp"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "yaml": "^2.8.2"
+  }
 }

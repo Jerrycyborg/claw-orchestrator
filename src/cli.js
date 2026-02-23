@@ -168,6 +168,7 @@ function formatSummary(out) {
     `Intent: ${run.intent || "n/a"}`,
     `Confidence: ${run.confidenceTag || "n/a"} (${run.confidence ?? "n/a"})`,
     `Channel: ${run.channelContext?.kind || "unknown"}`,
+    `Config: ${run.configSource || "defaults"}`,
     `Mode: ${ex.executionMode || "n/a"}`,
     `Stages:`
   ];

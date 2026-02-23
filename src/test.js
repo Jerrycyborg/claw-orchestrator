@@ -39,7 +39,7 @@ for (const f of ["STATUS.md", "NEXT_ACTIONS.md", "WORKFLOW.md", "TRUST.md"]) {
 const snap = readHandoffSnapshot(handoff);
 assert.equal(snap.ready, true);
 
-const run = createRun("Implement feature with security review", { handoffDir: handoff, approveSensitive: true });
+const run = createRun("Implement feature, build code, and fix bug", { handoffDir: handoff, approveSensitive: true });
 assert.ok(run.aahp.ready);
 
 const blockedNoApproval = createRun("Deploy production config update", { handoffDir: handoff });
