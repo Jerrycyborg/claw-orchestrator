@@ -6,15 +6,16 @@
 - [ ] Define config schema
 
 ## Phase 1 - Core Orchestrator
-- [ ] Prompt intent classifier
-- [ ] Pipeline router (sequential + parallel)
+- [x] Prompt intent classifier
+- [x] Pipeline router (sequential + parallel)
 - [ ] Retry/escalation policy
-- [ ] Run state store
+- [x] Run state store
 
 ## Phase 2 - AAHP Integration
-- [ ] Read STATUS/NEXT_ACTIONS/TRUST/WORKFLOW
-- [ ] Write LOG/STATUS/NEXT_ACTIONS updates
-- [ ] Confidence tagging (Verified/Assumed/Unknown)
+- [x] Read STATUS/NEXT_ACTIONS/TRUST/WORKFLOW
+- [x] Write LOG/NEXT_ACTIONS updates (planned run sync)
+- [x] Confidence tagging (Verified/Assumed/Unknown)
+- [ ] STATUS auto-refresh on completed execution
 
 ## Phase 3 - Safety & Governance
 - [ ] Security policy checks (PII/secrets)

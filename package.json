@@ -7,8 +7,9 @@
     "orchestrator": "./src/cli.js"
   },
   "scripts": {
-    "run": "node src/cli.js run --prompt \"Implement Firestore rules\"",
+    "run": "node src/cli.js run --prompt \"Implement Firestore rules\" --sync-aahp",
     "status": "node src/cli.js status",
+    "aahp:check": "node src/cli.js aahp-check",
     "test": "node src/test.js"
   },
   "keywords": [
