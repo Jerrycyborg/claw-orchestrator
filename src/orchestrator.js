@@ -4,16 +4,23 @@ import { routeIntent } from "./router.js";
 import { saveRun } from "./run-store.js";
 import { appendLogEntry, confidenceTag, readHandoffSnapshot, addNextAction } from "./aahp.js";
 import { enforcePolicy } from "./policy.js";
+import { enforceChannelPolicy } from "./channel-policy.js";
 
 export function createRun(prompt, options = {}) {
   const policy = enforcePolicy(prompt, { approveSensitive: !!options.approveSensitive });
-  if (!policy.ok) {
+  const channelPolicy = enforceChannelPolicy(options.channelContext, {
+    approveSensitive: !!options.approveSensitive,
+    channelPolicy: options.channelPolicy
+  });
+
+  if (!policy.ok || !channelPolicy.ok) {
     return {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       prompt,
       status: "blocked",
-      policy
+      policy,
+      channelPolicy
     };
   }
 
@@ -39,7 +46,9 @@ export function createRun(prompt, options = {}) {
       "AAHP read set: STATUS, NEXT_ACTIONS, WORKFLOW, TRUST",
       "Policy gate: block completion on high severity reviewer findings"
     ],
-    policy
+    policy,
+    channelPolicy,
+    channelContext: channelPolicy.channelContext
   };
 
   saveRun(run);

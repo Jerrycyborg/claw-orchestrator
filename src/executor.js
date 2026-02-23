@@ -1,8 +1,19 @@
+// @ts-check
 import { saveRun } from "./run-store.js";
 import { getRoleExecutor } from "./adapters/index.js";
 
+/**
+ * @typedef {import("./types.d.ts").RunRecord} RunRecord
+ * @typedef {import("./types.d.ts").ExecuteOptions} ExecuteOptions
+ */
+
+/**
+ * @param {RunRecord} run
+ * @param {ExecuteOptions} [options]
+ */
 export async function executeRun(run, options = {}) {
   const startedAt = new Date().toISOString();
+  /** @type {any} */
   const execution = {
     ...run,
     status: "running",
@@ -26,13 +37,13 @@ export async function executeRun(run, options = {}) {
 
     for (const role of stage.roles) {
       const result = await executeRole(
-        {
+        /** @type {any} */ ({
           role,
           prompt: run.prompt,
           intent: run.intent,
           runId: run.id,
           stageMode: stage.mode
-        },
+        }),
         options
       );
       stageRecord.results.push(result);

@@ -98,9 +98,15 @@ bash ./scripts/setup.sh
 
 # 4) inspect runs
 node src/cli.js status
+
+# 5) optional: event-driven hook mode (stdin or --event-file)
+echo '{"message":{"text":"Create release checklist"},"channelType":"dm"}' | node src/cli.js hook
+
+# 6) type check incremental TS migration path
+npm run typecheck
 ```
 
 ---
 
 ## 🗺️ Next step
-Implement channel policy integration and execution adapters so planned pipelines can trigger real role workers.
+Harden native OpenClaw API execution (no shell bridge), extend hook registration in runtime plugin lifecycle, and expand TS migration from typed JS checks into fully migrated `.ts` modules.

@@ -1,4 +1,7 @@
+// @ts-check
 import { Intents, Roles } from "./types.js";
+
+/** @typedef {import("./types.d.ts").Intent} Intent */
 
 const DEFAULT_ROUTES = {
   [Intents.RESEARCH_HEAVY]: [Roles.RESEARCHER, Roles.ARCHITECT],
@@ -7,6 +10,10 @@ const DEFAULT_ROUTES = {
   [Intents.AMBIGUOUS_PARALLEL]: [[Roles.RESEARCHER, Roles.OPS], Roles.ARCHITECT]
 };
 
+/**
+ * @param {Intent} intent
+ * @param {Record<string, string[] | string[][]>} [overrides]
+ */
 export function routeIntent(intent, overrides = {}) {
   const routes = { ...DEFAULT_ROUTES, ...overrides };
   const pipeline = routes[intent] || routes[Intents.AMBIGUOUS_PARALLEL];

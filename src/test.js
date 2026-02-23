@@ -9,6 +9,8 @@ import { createRun, syncRunToAahp } from "./orchestrator.js";
 import { readHandoffSnapshot, confidenceTag } from "./aahp.js";
 import { enforcePolicy } from "./policy.js";
 import { executeRun } from "./executor.js";
+import { enforceChannelPolicy } from "./channel-policy.js";
+import { eventToRunInput } from "./session-hook.js";
 
 const c1 = classifyPrompt("Please research options and compare pros cons");
 assert.equal(c1.intent, Intents.RESEARCH_HEAVY);
@@ -42,6 +44,19 @@ assert.ok(run.aahp.ready);
 
 const blockedNoApproval = createRun("Deploy production config update", { handoffDir: handoff });
 assert.equal(blockedNoApproval.status, "blocked");
+
+const blockedGroupChannel = createRun("Create task plan", {
+  handoffDir: handoff,
+  channelContext: { kind: "group" }
+});
+assert.equal(blockedGroupChannel.status, "blocked");
+
+const groupApproved = enforceChannelPolicy({ kind: "group" }, { approveSensitive: true, channelPolicy: { group: { allowed: true, requiresApproval: true } } });
+assert.equal(groupApproved.ok, true);
+
+const hookInput = eventToRunInput({ message: { text: "Do release prep" }, channelType: "dm", id: "evt1" });
+assert.equal(hookInput.prompt, "Do release prep");
+assert.equal(hookInput.channelContext.kind, "dm");
 
 const policySecret = enforcePolicy("api_key=sk-1234567890abcdefghijklmnop");
 assert.equal(policySecret.ok, false);

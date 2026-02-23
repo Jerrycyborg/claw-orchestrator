@@ -20,7 +20,7 @@
 ## Phase 3 - Safety & Governance
 - [x] Security policy checks (PII/secrets) at prompt gate
 - [x] Approval gates for sensitive actions (`--approve-sensitive`)
-- [ ] Channel policy integration
+- [x] Channel policy integration (direct vs group gate before execution)
 
 ## Phase 4 - UX
 - [x] CLI: `orchestrator run`
@@ -32,4 +32,5 @@
 - [x] Run state transitions (planned/running/completed/blocked)
 - [x] Stateless role executor adapter (simulation)
 - [x] OpenClaw adapter bridge (`--mode openclaw` + command template)
+- [x] Session-event hook entrypoint (`orchestrator hook`) for native plugin wiring path
 - [ ] Native OpenClaw API integration (without shell bridge)

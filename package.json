@@ -9,11 +9,17 @@
   "scripts": {
     "run": "node src/cli.js run --prompt \"Implement Firestore rules\" --sync-aahp --execute",
     "auto": "node src/cli.js auto --prompt \"Implement Firestore rules\" --summary",
+    "hook": "node src/cli.js hook --prompt \"Implement Firestore rules\"",
     "orchestrate": "bash ./scripts/orchestrate.sh",
     "setup": "bash ./scripts/setup.sh",
     "status": "node src/cli.js status",
     "aahp:check": "node src/cli.js aahp-check",
+    "typecheck": "npx tsc -p tsconfig.json",
     "test": "node src/test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/node": "^24.3.0"
   },
   "keywords": [
     "openclaw",
