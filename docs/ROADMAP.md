@@ -18,8 +18,8 @@
 - [ ] STATUS auto-refresh on completed execution
 
 ## Phase 3 - Safety & Governance
-- [ ] Security policy checks (PII/secrets)
-- [ ] Approval gates for sensitive actions
+- [x] Security policy checks (PII/secrets) at prompt gate
+- [x] Approval gates for sensitive actions (`--approve-sensitive`)
 - [ ] Channel policy integration
 
 ## Phase 4 - UX

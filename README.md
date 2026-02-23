@@ -58,10 +58,15 @@ Implemented now:
 - `.gitignore` for common local/secrets artifacts
 - No credentials in source files
 
+Implemented now:
+- Secret scanning in CI (gitleaks workflow)
+- `SECURITY.md` + reporting process
+- Prompt-time policy gate for secret/PII patterns
+- Sensitive-action approval flag (`--approve-sensitive`)
+
 Still required (next):
-- Secret scanning in CI (e.g., gitleaks)
-- Basic `SECURITY.md` + reporting process
 - Optional pre-commit checks
+- More robust secret detectors and allowlist tuning
 
 ---
 
@@ -93,4 +98,4 @@ cp config/orchestrator.example.yaml config/orchestrator.yaml
 ---
 
 ## 🗺️ Next step
-Implement Phase 1 core orchestrator engine from `docs/ROADMAP.md`.
+Implement channel policy integration and execution adapters so planned pipelines can trigger real role workers.

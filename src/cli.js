@@ -10,15 +10,16 @@ if (cmd === "run") {
   const prompt = readFlag(args, "--prompt") || "";
   const handoffDir = readFlag(args, "--handoff-dir") || ".ai/handoff";
   const sync = hasFlag(args, "--sync-aahp");
+  const approveSensitive = hasFlag(args, "--approve-sensitive");
 
   if (!prompt.trim()) {
-    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp]");
+    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive]");
     process.exit(1);
   }
-  const run = createRun(prompt, { handoffDir });
+  const run = createRun(prompt, { handoffDir, approveSensitive });
   const out = { run };
 
-  if (sync) {
+  if (sync && run.status !== "blocked") {
     out.sync = syncRunToAahp(run, { handoffDir });
   }
 
@@ -33,7 +34,7 @@ if (cmd === "status") {
     process.exit(0);
   }
   for (const r of runs) {
-    console.log(`- ${r.id} | ${r.intent} | conf=${r.confidence} (${r.confidenceTag || "n/a"}) | ${r.createdAt}`);
+    console.log(`- ${r.id} | ${r.status} | ${r.intent || "n/a"} | conf=${r.confidence ?? "n/a"} (${r.confidenceTag || "n/a"}) | ${r.createdAt}`);
   }
   process.exit(0);
 }
@@ -45,7 +46,7 @@ if (cmd === "aahp-check") {
   process.exit(0);
 }
 
-console.log("Usage:\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp]\n  orchestrator status\n  orchestrator aahp-check [--handoff-dir <dir>]");
+console.log("Usage:\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive]\n  orchestrator status\n  orchestrator aahp-check [--handoff-dir <dir>]");
 
 function readFlag(argv, flag) {
   const idx = argv.indexOf(flag);

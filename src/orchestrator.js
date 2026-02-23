@@ -3,8 +3,20 @@ import { classifyPrompt } from "./classifier.js";
 import { routeIntent } from "./router.js";
 import { saveRun } from "./run-store.js";
 import { appendLogEntry, confidenceTag, readHandoffSnapshot, addNextAction } from "./aahp.js";
+import { enforcePolicy } from "./policy.js";
 
 export function createRun(prompt, options = {}) {
+  const policy = enforcePolicy(prompt, { approveSensitive: !!options.approveSensitive });
+  if (!policy.ok) {
+    return {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      prompt,
+      status: "blocked",
+      policy
+    };
+  }
+
   const { intent, confidence } = classifyPrompt(prompt);
   const pipeline = routeIntent(intent);
   const handoff = readHandoffSnapshot(options.handoffDir);
@@ -26,7 +38,8 @@ export function createRun(prompt, options = {}) {
     notes: [
       "AAHP read set: STATUS, NEXT_ACTIONS, WORKFLOW, TRUST",
       "Policy gate: block completion on high severity reviewer findings"
-    ]
+    ],
+    policy
   };
 
   saveRun(run);

@@ -7,6 +7,7 @@ import { routeIntent } from "./router.js";
 import { Intents } from "./types.js";
 import { createRun, syncRunToAahp } from "./orchestrator.js";
 import { readHandoffSnapshot, confidenceTag } from "./aahp.js";
+import { enforcePolicy } from "./policy.js";
 
 const c1 = classifyPrompt("Please research options and compare pros cons");
 assert.equal(c1.intent, Intents.RESEARCH_HEAVY);
@@ -35,8 +36,14 @@ for (const f of ["STATUS.md", "NEXT_ACTIONS.md", "WORKFLOW.md", "TRUST.md"]) {
 const snap = readHandoffSnapshot(handoff);
 assert.equal(snap.ready, true);
 
-const run = createRun("Implement feature with security review", { handoffDir: handoff });
+const run = createRun("Implement feature with security review", { handoffDir: handoff, approveSensitive: true });
 assert.ok(run.aahp.ready);
+
+const blockedNoApproval = createRun("Deploy production config update", { handoffDir: handoff });
+assert.equal(blockedNoApproval.status, "blocked");
+
+const policySecret = enforcePolicy("api_key=sk-1234567890abcdefghijklmnop");
+assert.equal(policySecret.ok, false);
 
 const synced = syncRunToAahp(run, { handoffDir: handoff });
 assert.ok(fs.existsSync(synced.logFile));
