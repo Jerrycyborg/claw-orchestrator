@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { createRun, syncRunToAahp } from "./orchestrator.js";
-import { listRuns } from "./run-store.js";
+import { listRuns, getRun } from "./run-store.js";
 import { readHandoffSnapshot } from "./aahp.js";
+import { executeRun } from "./executor.js";
 
 const args = process.argv.slice(2);
 const cmd = args[0];
@@ -10,10 +11,11 @@ if (cmd === "run") {
   const prompt = readFlag(args, "--prompt") || "";
   const handoffDir = readFlag(args, "--handoff-dir") || ".ai/handoff";
   const sync = hasFlag(args, "--sync-aahp");
+  const execute = hasFlag(args, "--execute");
   const approveSensitive = hasFlag(args, "--approve-sensitive");
 
   if (!prompt.trim()) {
-    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive]");
+    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute]");
     process.exit(1);
   }
   const run = createRun(prompt, { handoffDir, approveSensitive });
@@ -21,6 +23,10 @@ if (cmd === "run") {
 
   if (sync && run.status !== "blocked") {
     out.sync = syncRunToAahp(run, { handoffDir });
+  }
+
+  if (execute && run.status !== "blocked") {
+    out.execution = await executeRun(run);
   }
 
   console.log(JSON.stringify(out, null, 2));
@@ -39,6 +45,21 @@ if (cmd === "status") {
   process.exit(0);
 }
 
+if (cmd === "show") {
+  const id = readFlag(args, "--id");
+  if (!id) {
+    console.log("Usage: orchestrator show --id <run-id>");
+    process.exit(1);
+  }
+  const run = getRun(id);
+  if (!run) {
+    console.log("Run not found");
+    process.exit(1);
+  }
+  console.log(JSON.stringify(run, null, 2));
+  process.exit(0);
+}
+
 if (cmd === "aahp-check") {
   const handoffDir = readFlag(args, "--handoff-dir") || ".ai/handoff";
   const snap = readHandoffSnapshot(handoffDir);
@@ -46,7 +67,7 @@ if (cmd === "aahp-check") {
   process.exit(0);
 }
 
-console.log("Usage:\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive]\n  orchestrator status\n  orchestrator aahp-check [--handoff-dir <dir>]");
+console.log("Usage:\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
 
 function readFlag(argv, flag) {
   const idx = argv.indexOf(flag);

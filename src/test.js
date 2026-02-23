@@ -8,6 +8,7 @@ import { Intents } from "./types.js";
 import { createRun, syncRunToAahp } from "./orchestrator.js";
 import { readHandoffSnapshot, confidenceTag } from "./aahp.js";
 import { enforcePolicy } from "./policy.js";
+import { executeRun } from "./executor.js";
 
 const c1 = classifyPrompt("Please research options and compare pros cons");
 assert.equal(c1.intent, Intents.RESEARCH_HEAVY);
@@ -48,5 +49,10 @@ assert.equal(policySecret.ok, false);
 const synced = syncRunToAahp(run, { handoffDir: handoff });
 assert.ok(fs.existsSync(synced.logFile));
 assert.ok(fs.existsSync(synced.nextActionsFile));
+
+const executed = await executeRun(run, { simulateDelayMs: 1 });
+assert.equal(executed.status, "completed");
+assert.ok(Array.isArray(executed.stages));
+assert.ok(executed.stages.length >= 1);
 
 console.log("All tests passed ✅");

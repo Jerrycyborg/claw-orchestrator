@@ -10,6 +10,12 @@ export function saveRun(run) {
   return file;
 }
 
+export function getRun(id) {
+  const file = path.join(RUN_DIR, `${id}.json`);
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
 export function listRuns(limit = 10) {
   if (!fs.existsSync(RUN_DIR)) return [];
   const files = fs.readdirSync(RUN_DIR)

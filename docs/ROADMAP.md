@@ -23,6 +23,12 @@
 - [ ] Channel policy integration
 
 ## Phase 4 - UX
-- [ ] CLI: `orchestrator run`
-- [ ] CLI: `orchestrator status`
+- [x] CLI: `orchestrator run`
+- [x] CLI: `orchestrator status`
+- [x] CLI: `orchestrator show --id <run-id>`
 - [ ] Summary output for owner
+
+## Phase 5 - Execution Runtime
+- [x] Run state transitions (planned/running/completed/blocked)
+- [x] Stateless role executor adapter (simulation)
+- [ ] OpenClaw session/tool execution adapters
