@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { exec, execFile, execSync } from "child_process";
 
 function hasOpenClawCli() {
@@ -21,12 +23,22 @@ function runCmd(command, args) {
   });
 }
 
+function loadRoleTemplate(role) {
+  const file = path.resolve(process.cwd(), "config", "roles", `${role}.md`);
+  if (!fs.existsSync(file)) {
+    return "Role: {role}\nIntent: {intent}\nRun: {runId}\nPrompt:\n{prompt}";
+  }
+  return fs.readFileSync(file, "utf8");
+}
+
 function renderTemplate(template, ctx) {
   return template
     .replaceAll("{role}", ctx.role)
     .replaceAll("{prompt}", ctx.prompt)
     .replaceAll("{intent}", ctx.intent || "")
-    .replaceAll("{runId}", ctx.runId);
+    .replaceAll("{runId}", ctx.runId)
+    .replaceAll("{rolePrompt}", ctx.rolePrompt)
+    .replaceAll("{rolePromptB64}", ctx.rolePromptB64);
 }
 
 export async function executeRole(ctx) {
@@ -40,8 +52,17 @@ export async function executeRole(ctx) {
     };
   }
 
-  const template = process.env.OPENCLAW_ROLE_CMD;
-  if (!template) {
+  const roleTemplate = loadRoleTemplate(ctx.role);
+  const rolePrompt = renderTemplate(roleTemplate, {
+    ...ctx,
+    rolePrompt: "",
+    rolePromptB64: ""
+  });
+
+  const rolePromptB64 = Buffer.from(rolePrompt, "utf8").toString("base64");
+  const commandTemplate = process.env.OPENCLAW_ROLE_CMD;
+
+  if (!commandTemplate) {
     const probe = await runCmd("openclaw", ["status"]);
     return {
       role: ctx.role,
@@ -51,13 +72,17 @@ export async function executeRole(ctx) {
         ? "OpenClaw reachable (probe). Set OPENCLAW_ROLE_CMD for real role execution bridge."
         : `OpenClaw probe failed: ${probe.error}`,
       output: trim(probe.stdout),
-      error: trim(probe.stderr)
+      error: trim(probe.stderr),
+      rolePromptPreview: trim(rolePrompt).slice(0, 300)
     };
   }
 
-  // Template should produce a shell command, e.g.:
-  // OPENCLAW_ROLE_CMD='openclaw sessions send --label pool-{role} --message "{prompt}"'
-  const cmd = renderTemplate(template, ctx);
+  const cmd = renderTemplate(commandTemplate, {
+    ...ctx,
+    rolePrompt,
+    rolePromptB64
+  });
+
   const shellResult = await new Promise((resolve) => {
     exec(cmd, { timeout: 60000 }, (error, stdout, stderr) => {
       if (error) resolve({ ok: false, error: error.message, stdout, stderr });

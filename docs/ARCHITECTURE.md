@@ -27,6 +27,8 @@ Template placeholders:
 - `{prompt}`
 - `{intent}`
 - `{runId}`
+- `{rolePrompt}` (rendered role-specific prompt from `config/roles/<role>.md`)
+- `{rolePromptB64}` (base64-encoded role prompt)
 
 Example:
 ```bash

@@ -26,10 +26,13 @@ It is designed to work with **AAHP-style handoffs** and supports both:
   - prompt intent classifier
   - pipeline router (sequential + parallel)
   - run store + run trace output
-  - CLI (`run`, `status`)
+  - CLI (`run`, `status`, `show`)
+- Phase 2 AAHP integration implemented
+- Phase 3 policy gates implemented
+- Phase 5/6 execution adapters implemented (`simulate` + `openclaw` bridge)
 - Git repository initialized
 
-> This is now a **working Phase 1 prototype** (still not production-ready).
+> This is now a **working prototype** (not production-ready yet).
 
 ---
 
@@ -76,8 +79,8 @@ Still required (next):
 
 ## 📁 Project structure
 - `docs/` architecture, roadmap, design notes
-- `src/` orchestrator core (to be implemented)
-- `config/` routing and policy configuration
+- `src/` orchestrator core and execution adapters
+- `config/` routing, role templates, and bridge command examples
 - `scripts/` local helper scripts
 - `.github/workflows/` CI/security checks
 
@@ -89,14 +92,18 @@ Still required (next):
 # 2) run unit tests
 npm test
 
-# 3) plan a run from a prompt
-node src/cli.js run --prompt "Implement Firestore rules and review security"
+# 3) execute in simulate mode
+node src/cli.js run --prompt "Implement Firestore rules and review security" --execute --mode simulate
 
-# 4) inspect recent planned runs
+# 4) check runs
 node src/cli.js status
 
-# 5) copy config template for future extensions
-cp config/orchestrator.example.yaml config/orchestrator.yaml
+# 5) openclaw bridge mode (probe if no command template is set)
+node src/cli.js run --prompt "Implement Firestore rules and review security" --execute --mode openclaw
+
+# 6) enable real role dispatch bridge
+export OPENCLAW_ROLE_CMD='openclaw sessions send --label pool-{role} --message "{rolePrompt}"'
+node src/cli.js run --prompt "Implement Firestore rules and review security" --execute --mode openclaw
 ```
 
 ---
