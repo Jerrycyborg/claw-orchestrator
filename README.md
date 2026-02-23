@@ -92,18 +92,18 @@ Still required (next):
 # 2) run unit tests
 npm test
 
-# 3) execute in simulate mode
-node src/cli.js run --prompt "Implement Firestore rules and review security" --execute --mode simulate
+# 3) one-command end-to-end mode (recommended)
+node src/cli.js auto --prompt "Implement Firestore rules and review security"
 
 # 4) check runs
 node src/cli.js status
 
-# 5) openclaw bridge mode (probe if no command template is set)
-node src/cli.js run --prompt "Implement Firestore rules and review security" --execute --mode openclaw
+# 5) optional manual mode
+node src/cli.js run --prompt "Implement Firestore rules and review security" --sync-aahp --execute --mode openclaw
 
-# 6) enable real role dispatch bridge
+# 6) optional custom bridge command template
 export OPENCLAW_ROLE_CMD='openclaw sessions send --label pool-{role} --message "{rolePrompt}"'
-node src/cli.js run --prompt "Implement Firestore rules and review security" --execute --mode openclaw
+node src/cli.js auto --prompt "Implement Firestore rules and review security"
 ```
 
 ---

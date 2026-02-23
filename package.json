@@ -8,6 +8,7 @@
   },
   "scripts": {
     "run": "node src/cli.js run --prompt \"Implement Firestore rules\" --sync-aahp --execute",
+    "auto": "node src/cli.js auto --prompt \"Implement Firestore rules\"",
     "status": "node src/cli.js status",
     "aahp:check": "node src/cli.js aahp-check",
     "test": "node src/test.js"

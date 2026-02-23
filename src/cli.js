@@ -34,6 +34,28 @@ if (cmd === "run") {
   process.exit(0);
 }
 
+if (cmd === "auto") {
+  const prompt = readFlag(args, "--prompt") || "";
+  const handoffDir = readFlag(args, "--handoff-dir") || ".ai/handoff";
+  const approveSensitive = hasFlag(args, "--approve-sensitive");
+
+  if (!prompt.trim()) {
+    console.log("Usage: orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive]");
+    process.exit(1);
+  }
+
+  const run = createRun(prompt, { handoffDir, approveSensitive });
+  const out = { run };
+
+  if (run.status !== "blocked") {
+    out.sync = syncRunToAahp(run, { handoffDir });
+    out.execution = await executeRun(run, { mode: "openclaw" });
+  }
+
+  console.log(JSON.stringify(out, null, 2));
+  process.exit(0);
+}
+
 if (cmd === "status") {
   const runs = listRuns(10);
   if (!runs.length) {
@@ -68,7 +90,7 @@ if (cmd === "aahp-check") {
   process.exit(0);
 }
 
-console.log("Usage:\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
+console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
 
 function readFlag(argv, flag) {
   const idx = argv.indexOf(flag);

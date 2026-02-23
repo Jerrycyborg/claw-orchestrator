@@ -11,11 +11,18 @@ function hasOpenClawCli() {
   }
 }
 
-function runCmd(command, args) {
+function runCmd(command, args, timeoutMs = 20000) {
   return new Promise((resolve) => {
-    execFile(command, args, { timeout: 20000 }, (error, stdout, stderr) => {
+    execFile(command, args, { timeout: timeoutMs }, (error, stdout, stderr) => {
       if (error) {
-        resolve({ ok: false, error: error.message, stdout, stderr });
+        resolve({
+          ok: false,
+          error: error.message,
+          code: error.code,
+          signal: error.signal,
+          stdout,
+          stderr
+        });
         return;
       }
       resolve({ ok: true, stdout, stderr });
@@ -62,18 +69,34 @@ export async function executeRole(ctx) {
   const rolePromptB64 = Buffer.from(rolePrompt, "utf8").toString("base64");
   const commandTemplate = process.env.OPENCLAW_ROLE_CMD;
 
+  // Default real dispatch path (no env required)
   if (!commandTemplate) {
-    const probe = await runCmd("openclaw", ["status"]);
+    const dispatched = await runCmd(
+      "openclaw",
+      [
+        "agent",
+        "--agent",
+        ctx.role,
+        "--message",
+        rolePrompt,
+        "--thinking",
+        "low",
+        "--timeout",
+        "120",
+        "--json"
+      ],
+      130000
+    );
+
     return {
       role: ctx.role,
-      status: probe.ok ? "ok" : "warning",
+      status: dispatched.ok ? "ok" : "failed",
       adapter: "openclaw",
-      note: probe.ok
-        ? "OpenClaw reachable (probe). Set OPENCLAW_ROLE_CMD for real role execution bridge."
-        : `OpenClaw probe failed: ${probe.error}`,
-      output: trim(probe.stdout),
-      error: trim(probe.stderr),
-      rolePromptPreview: trim(rolePrompt).slice(0, 300)
+      note: dispatched.ok
+        ? "Role executed via default OpenClaw agent dispatch"
+        : "Default OpenClaw agent dispatch failed",
+      output: trim(dispatched.stdout),
+      error: trim(dispatched.stderr || dispatched.error || "")
     };
   }
 
