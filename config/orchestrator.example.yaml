@@ -1,0 +1,16 @@
+version: 1
+name: claw-orchestrator
+roles:
+  - researcher
+  - architect
+  - implementer
+  - reviewer
+  - ops
+routing:
+  research_heavy: [researcher, architect]
+  build_change: [architect, implementer, reviewer]
+  security_ops: [ops, reviewer]
+  ambiguous_parallel: [[researcher, ops], architect]
+policy:
+  block_on_high_severity: true
+  require_confidence_threshold: 0.7
