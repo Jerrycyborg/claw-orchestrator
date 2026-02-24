@@ -129,39 +129,42 @@ npm install
 # 3) one-step setup (installs local skill + scripts)
 bash ./scripts/setup.sh
 
-# 3) run end-to-end orchestration with clean summary
+# 4) run end-to-end orchestration with clean summary
 ./scripts/orchestrate.sh "Implement Firestore rules and review security"
 
-# 4) inspect runs
+# 5) inspect runs
 node src/cli.js status
 
-# 5) continue automatically from .ai/handoff/NEXT_ACTIONS.md
+# 6) continue automatically from .ai/handoff/NEXT_ACTIONS.md
 node src/cli.js autopilot --summary --max-runs 3
 
-# 6) optional: event-driven hook mode (stdin or --event-file)
+# 7) optional: event-driven hook mode (stdin or --event-file)
 echo '{"message":{"text":"Create release checklist"},"channelType":"dm"}' | node src/cli.js hook
 
-# 7) quality checks
+# 8) quality checks
 npm run lint
 npm run format:check
 npm run typecheck
 npm test
 ```
 
-## 🧪 Test infrastructure (Vitest)
+## 👩‍💻 Development workflow
 
-- Unit tests: `tests/unit`
-- Integration tests: `tests/integration`
-- End-to-end tests: `tests/e2e`
-
-Commands:
+- Branch from `main` with a focused feature/fix branch
+- Keep commits small and conventional (`feat:`, `fix:`, `docs:`, `chore:`)
+- Run local checks before push:
 
 ```bash
+npm run lint
+npm run format:check
 npm test
-npm run test:unit
-npm run test:integration
-npm run test:e2e
+npm run typecheck
+npm run aahp:check
+npm run secret:scan
 ```
+
+- Pre-commit hook runs lint-staged checks automatically
+- CI should stay green before opening/merging PRs
 
 See `CONTRIBUTING.md` for full development guidelines.
 
