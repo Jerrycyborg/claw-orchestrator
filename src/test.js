@@ -40,7 +40,16 @@ for (const f of ["STATUS.md", "NEXT_ACTIONS.md", "WORKFLOW.md", "TRUST.md"]) {
 const snap = readHandoffSnapshot(handoff);
 assert.equal(snap.ready, true);
 
-const run = createRun("Implement feature, build code, and fix bug", { handoffDir: handoff, approveSensitive: true });
+fs.writeFileSync(path.join(handoff, "NEXT_ACTIONS.md"), "INVALID LINE WITHOUT CHECKBOX\n");
+const invalidSnap = readHandoffSnapshot(handoff);
+assert.equal(invalidSnap.ready, false);
+assert.ok(invalidSnap.validationErrors["NEXT_ACTIONS.md"]);
+fs.writeFileSync(path.join(handoff, "NEXT_ACTIONS.md"), "# NEXT_ACTIONS\n- [ ] test\n");
+
+const run = createRun("Implement feature, build code, and fix bug", {
+  handoffDir: handoff,
+  approveSensitive: true
+});
 assert.ok(run.aahp.ready);
 
 const blockedNoApproval = createRun("Deploy production config update", { handoffDir: handoff });
@@ -52,17 +61,33 @@ const blockedGroupChannel = createRun("Create task plan", {
 });
 assert.equal(blockedGroupChannel.status, "blocked");
 
-const groupApproved = enforceChannelPolicy({ kind: "group" }, { approveSensitive: true, channelPolicy: { group: { allowed: true, requiresApproval: true } } });
+const groupApproved = enforceChannelPolicy(
+  { kind: "group" },
+  { approveSensitive: true, channelPolicy: { group: { allowed: true, requiresApproval: true } } }
+);
 assert.equal(groupApproved.ok, true);
 
-const hookInput = eventToRunInput({ message: { text: "Do release prep" }, channelType: "dm", id: "evt1" });
+const hookInput = eventToRunInput({
+  message: { text: "Do release prep" },
+  channelType: "dm",
+  id: "evt1"
+});
 assert.equal(hookInput.prompt, "Do release prep");
 assert.equal(hookInput.channelContext.kind, "dm");
 
-const policySecret = enforcePolicy("api_key=sk-1234567890abcdefghijklmnop");
+const policySecret = enforcePolicy("api_key=dummy_secret_value");
 assert.equal(policySecret.ok, false);
 
-assert.equal(resolveDispatchPlan({ OPENCLAW_API_URL: "http://localhost:8080" }, false), "native-api");
+createRun("api_key=test_secret_value", { handoffDir: handoff });
+const auditFile = path.join(handoff, "AUDIT.log.jsonl");
+assert.ok(fs.existsSync(auditFile));
+const auditLines = fs.readFileSync(auditFile, "utf8").trim().split(/\r?\n/);
+assert.ok(auditLines.length >= 1);
+
+assert.equal(
+  resolveDispatchPlan({ OPENCLAW_API_URL: "http://localhost:8080" }, false),
+  "native-api"
+);
 assert.equal(resolveDispatchPlan({}, true), "native-cli");
 assert.equal(resolveDispatchPlan({ OPENCLAW_ROLE_CMD: "echo hi" }, false), "legacy-shell-bridge");
 assert.equal(resolveDispatchPlan({}, false), "unavailable");

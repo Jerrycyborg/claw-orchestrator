@@ -6,10 +6,19 @@ import { appendLogEntry, confidenceTag, readHandoffSnapshot, addNextAction } fro
 import { enforcePolicy } from "./policy.js";
 import { enforceChannelPolicy } from "./channel-policy.js";
 import { loadOrchestratorConfig } from "./config.js";
+import { recordAuditEvent } from "./audit.js";
 
 function detectBuildMode(prompt) {
   const p = (prompt || "").toLowerCase();
-  const existingSignals = ["update", "existing", "already", "continue", "refactor", "fix", "improve"];
+  const existingSignals = [
+    "update",
+    "existing",
+    "already",
+    "continue",
+    "refactor",
+    "fix",
+    "improve"
+  ];
   const isExistingProject = existingSignals.some((s) => p.includes(s));
   return isExistingProject ? "existing" : "new";
 }
@@ -23,6 +32,36 @@ export function createRun(prompt, options = {}) {
     approveSensitive: !!options.approveSensitive,
     channelPolicy: options.channelPolicy || runtimeConfig.channelPolicy
   });
+
+  if ((policy.findings || []).length > 0 || !policy.ok) {
+    recordAuditEvent(
+      {
+        event: "policy_scan",
+        severity: policy.blocked ? "high" : "medium",
+        decision: policy.ok ? "allow" : "block",
+        details: {
+          reason: policy.reason || null,
+          findings: policy.findings || []
+        }
+      },
+      { auditDir: options.handoffDir }
+    );
+  }
+
+  if (!channelPolicy.ok || channelPolicy.requiresApproval) {
+    recordAuditEvent(
+      {
+        event: "channel_policy",
+        severity: channelPolicy.ok ? "medium" : "high",
+        decision: channelPolicy.ok ? "require-approval" : "block",
+        details: {
+          reason: channelPolicy.reason || null,
+          channelContext: channelPolicy.channelContext || options.channelContext || {}
+        }
+      },
+      { auditDir: options.handoffDir }
+    );
+  }
 
   if (!policy.ok || !channelPolicy.ok) {
     return {
@@ -60,19 +99,20 @@ export function createRun(prompt, options = {}) {
 
   if (intent === "build_change") {
     buildMode = detectBuildMode(prompt);
-    pipeline = buildMode === "existing"
-      ? [
-          { stage: 1, mode: "sequential", roles: ["reviewer"] },
-          { stage: 2, mode: "sequential", roles: ["architect"] },
-          { stage: 3, mode: "sequential", roles: ["implementer"] },
-          { stage: 4, mode: "sequential", roles: ["reviewer"] }
-        ]
-      : [
-          { stage: 1, mode: "sequential", roles: ["researcher"] },
-          { stage: 2, mode: "sequential", roles: ["architect"] },
-          { stage: 3, mode: "sequential", roles: ["implementer"] },
-          { stage: 4, mode: "sequential", roles: ["reviewer"] }
-        ];
+    pipeline =
+      buildMode === "existing"
+        ? [
+            { stage: 1, mode: "sequential", roles: ["reviewer"] },
+            { stage: 2, mode: "sequential", roles: ["architect"] },
+            { stage: 3, mode: "sequential", roles: ["implementer"] },
+            { stage: 4, mode: "sequential", roles: ["reviewer"] }
+          ]
+        : [
+            { stage: 1, mode: "sequential", roles: ["researcher"] },
+            { stage: 2, mode: "sequential", roles: ["architect"] },
+            { stage: 3, mode: "sequential", roles: ["implementer"] },
+            { stage: 4, mode: "sequential", roles: ["reviewer"] }
+          ];
   }
 
   const handoff = readHandoffSnapshot(options.handoffDir);

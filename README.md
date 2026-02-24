@@ -77,13 +77,15 @@ Implemented now:
 Implemented now:
 
 - Secret scanning in CI (gitleaks workflow)
-- `SECURITY.md` + reporting process
+- Local pre-commit secret scan (`npm run secret:scan`)
+- `SECURITY.md` + `SECURITY_ROADMAP.md`
 - Prompt-time policy gate for secret/PII patterns
 - Sensitive-action approval flag (`--approve-sensitive`)
+- AAHP handoff file validation + audit trail (`.ai/handoff/AUDIT.log.jsonl`)
 
 Still required (next):
 
-- Optional pre-commit checks
+- Signed/tamper-evident policy audit records
 - More robust secret detectors and allowlist tuning
 
 ---

@@ -22,6 +22,7 @@
     "format": "prettier \"src/**/*.{js,json}\" \"*.{js,json,md}\" \".github/workflows/*.{yml,yaml}\" --write",
     "format:check": "prettier \"src/**/*.{js,json}\" \"*.{js,json,md}\" \".github/workflows/*.{yml,yaml}\" --check",
     "lint-staged": "lint-staged",
+    "secret:scan": "node scripts/secret-scan.js",
     "prepare": "husky"
   },
   "devDependencies": {
