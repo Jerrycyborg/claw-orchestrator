@@ -96,6 +96,14 @@ Still required (next):
 - `scripts/` local helper scripts
 - `.github/workflows/` CI/security checks (security scan + release gate)
 
+## 📚 Documentation
+
+- Architecture: `docs/ARCHITECTURE.md`
+- CLI/API reference: `docs/API.md`
+- Extending the system: `docs/EXTENDING.md`
+- Troubleshooting: `docs/TROUBLESHOOTING.md`
+- Roadmap: `docs/ROADMAP.md`
+
 ---
 
 ## ▶️ Getting started (out-of-box)

@@ -1,37 +1,41 @@
-# Architecture (Draft)
+# Architecture
 
-## Components
-1. Intent Classifier
-2. Routing Engine
-3. Role Executors
-4. Handoff Manager (AAHP)
-5. Policy Engine
-6. Run Logger
+## Overview
 
-## Default Pipeline
-- Researcher -> Architect -> Implementer -> Reviewer
-- Ops joins when prompt is deployment/security/config heavy.
+`claw-orchestrator` turns one prompt into a role pipeline:
 
-## Execution Modes
-- `simulate` (default): local adapter for deterministic dry-runs
-- `openclaw`: bridge adapter that can execute role calls through OpenClaw CLI hooks
-- Persistent role session mode (future when runtime thread hooks are available)
+1. classify intent
+2. choose route
+3. execute roles
+4. log run state
+5. sync handoff files
 
-## OpenClaw Adapter Bridge
-`openclaw` mode supports two levels:
-1. Probe mode (default): verifies OpenClaw reachability via `openclaw status`
-2. Command bridge mode: set `OPENCLAW_ROLE_CMD` template for real role execution.
+## Core modules
 
-Template placeholders:
-- `{role}`
-- `{prompt}`
-- `{intent}`
-- `{runId}`
-- `{rolePrompt}` (rendered role-specific prompt from `config/roles/<role>.md`)
-- `{rolePromptB64}` (base64-encoded role prompt)
+- `src/classifier.js` — maps prompt to intent + confidence.
+- `src/router.js` — builds stage plan (sequential/parallel role sets).
+- `src/executor.js` — executes pipeline with retries and escalation.
+- `src/adapters/*` — execution backends:
+  - `simulate` for deterministic local runs
+  - `openclaw` for native OpenClaw dispatch (API/CLI, legacy shell fallback)
+- `src/aahp.js` — handoff read/write (`STATUS.md`, `NEXT_ACTIONS.md`, `LOG.md`).
+- `src/policy.js` + `src/channel-policy.js` — safety and channel gating.
 
-Example:
-```bash
-export OPENCLAW_ROLE_CMD='openclaw sessions send --label pool-{role} --message "{prompt}"'
-node src/cli.js run --prompt "Implement feature X" --execute --mode openclaw
-```
+## Run lifecycle
+
+1. `createRun()` builds run metadata and pipeline.
+2. Optional AAHP sync writes planned run context.
+3. `executeRun()` processes each stage and role.
+4. On failure, run is marked failed with escalation note.
+5. On completion, status is updated and run is persisted.
+
+## Execution modes
+
+- `simulate` (safe local default)
+- `openclaw` (preferred for real role execution)
+
+## Key design choices
+
+- Stateless role execution first (predictable, easier recovery)
+- Strict policy gates before execution
+- Explicit run artifacts for auditability
