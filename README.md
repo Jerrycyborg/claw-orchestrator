@@ -166,6 +166,31 @@ npm run secret:scan
 - Pre-commit hook runs lint-staged checks automatically
 - CI should stay green before opening/merging PRs
 
+## 🚢 Release workflow (quick)
+
+```bash
+# ensure clean branch
+git checkout main
+git pull --ff-only
+
+# run release gate checks
+npm run lint
+npm run format:check
+npm test
+npm run typecheck
+npm run aahp:check
+npm run secret:scan
+
+# optional: verify OpenClaw health integration
+node src/cli.js status
+```
+
+Then:
+
+- Update docs/changelog notes for user-visible changes
+- Create a version/tag commit following your release policy
+- Push and verify GitHub Actions release/security workflows are green
+
 See `CONTRIBUTING.md` for full development guidelines.
 
 ---
