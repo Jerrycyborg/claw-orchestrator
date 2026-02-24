@@ -106,6 +106,18 @@ Still required (next):
 - Troubleshooting: `docs/TROUBLESHOOTING.md`
 - Roadmap: `docs/ROADMAP.md`
 
+## 🧪 Test infrastructure (Vitest)
+
+- Runner: **Vitest** (`npm test`)
+- Test structure:
+  - `tests/unit/` — classifier/router/policy checks
+  - `tests/integration/` — AAHP handoff checks
+  - `tests/e2e/` — orchestrator run with simulated adapter
+- Focused runs:
+  - `npm run test:unit`
+  - `npm run test:integration`
+  - `npm run test:e2e`
+
 ---
 
 ## ▶️ Getting started (out-of-box)
@@ -133,6 +145,22 @@ echo '{"message":{"text":"Create release checklist"},"channelType":"dm"}' | node
 npm run lint
 npm run format:check
 npm run typecheck
+npm test
+```
+
+## 🧪 Test infrastructure (Vitest)
+
+- Unit tests: `tests/unit`
+- Integration tests: `tests/integration`
+- End-to-end tests: `tests/e2e`
+
+Commands:
+
+```bash
+npm test
+npm run test:unit
+npm run test:integration
+npm run test:e2e
 ```
 
 See `CONTRIBUTING.md` for full development guidelines.
