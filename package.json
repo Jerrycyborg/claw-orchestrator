@@ -11,6 +11,7 @@
     "auto": "node src/cli.js auto --prompt \"Implement Firestore rules\" --summary",
     "hook": "node src/cli.js hook --prompt \"Implement Firestore rules\"",
     "orchestrate": "bash ./scripts/orchestrate.sh",
+    "autopilot": "node src/cli.js autopilot --summary",
     "setup": "bash ./scripts/setup.sh",
     "status": "node src/cli.js status",
     "aahp:check": "node src/cli.js aahp-check",

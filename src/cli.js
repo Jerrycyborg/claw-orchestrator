@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import fs from "fs";
+import path from "path";
 import { createRun, syncRunToAahp } from "./orchestrator.js";
 import { listRuns, getRun } from "./run-store.js";
 import { readHandoffSnapshot, updateStatusWithRun } from "./aahp.js";
@@ -105,6 +107,76 @@ if (cmd === "hook") {
   process.exit(run.status === "blocked" ? 2 : 0);
 }
 
+if (cmd === "autopilot") {
+  const handoffDir = readFlag(args, "--handoff-dir") || ".ai/handoff";
+  const approveSensitive = hasFlag(args, "--approve-sensitive");
+  const summary = hasFlag(args, "--summary");
+  const channelKind = parseChannelFlag(readFlag(args, "--channel") || "direct");
+  const maxRuns = Math.max(1, Number(readFlag(args, "--max-runs") || 3));
+  const maxRetries = Math.max(0, Number(readFlag(args, "--max-retries") || 1));
+  const execMode = readFlag(args, "--mode") || "openclaw";
+
+  const pending = readPendingActions(handoffDir);
+  if (!pending.length) {
+    console.log("No pending unchecked NEXT_ACTIONS.");
+    process.exit(0);
+  }
+
+  const report = {
+    mode: "autopilot",
+    handoffDir,
+    selected: pending.length,
+    maxRuns,
+    executed: []
+  };
+
+  let runsLeft = maxRuns;
+  for (const action of pending) {
+    if (runsLeft <= 0) break;
+
+    const run = createRun(action.text, {
+      handoffDir,
+      approveSensitive,
+      channelContext: { kind: channelKind }
+    });
+
+    const item = {
+      action: action.text,
+      line: action.line,
+      runId: run.id,
+      status: run.status
+    };
+
+    if (run.status === "blocked") {
+      item.reason = run.policy?.reason || run.channelPolicy?.reason || "policy gate";
+      report.executed.push(item);
+      break;
+    }
+
+    syncRunToAahp(run, { handoffDir });
+    const execution = await executeRun(run, { mode: execMode, maxRetries });
+    updateStatusWithRun(handoffDir, execution);
+    markActionDone(handoffDir, action);
+
+    item.status = execution.status;
+    item.intent = run.intent;
+    report.executed.push(item);
+
+    runsLeft -= 1;
+    if (execution.status !== "completed") break;
+  }
+
+  report.remaining = readPendingActions(handoffDir).length;
+
+  if (summary) {
+    console.log(formatAutopilotSummary(report));
+  } else {
+    console.log(JSON.stringify(report, null, 2));
+  }
+
+  process.exit(0);
+}
+
 if (cmd === "status") {
   const runs = listRuns(10);
   if (!runs.length) {
@@ -139,7 +211,7 @@ if (cmd === "aahp-check") {
   process.exit(0);
 }
 
-console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator hook [--event-file event.json|stdin] [--prompt \"...\"] [--approve-sensitive]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
+console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]\n  orchestrator autopilot [--handoff-dir <dir>] [--approve-sensitive] [--mode simulate|openclaw] [--max-runs N] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator hook [--event-file event.json|stdin] [--prompt \"...\"] [--approve-sensitive]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
 
 function readFlag(argv, flag) {
   const idx = argv.indexOf(flag);
@@ -181,4 +253,54 @@ function formatSummary(out) {
   if (ex.escalation) lines.push(`Escalation: ${ex.escalation}`);
 
   return lines.join("\n");
+}
+
+function formatAutopilotSummary(report) {
+  const lines = [
+    `🤖 Autopilot completed`,
+    `Runs attempted: ${report.executed.length}/${report.maxRuns}`,
+    `Remaining unchecked actions: ${report.remaining}`
+  ];
+
+  for (const item of report.executed) {
+    lines.push(`- line ${item.line}: ${item.status} | ${item.runId} | ${item.action}`);
+    if (item.reason) lines.push(`  reason: ${item.reason}`);
+  }
+
+  return lines.join("\n");
+}
+
+function readPendingActions(handoffDir) {
+  const file = path.resolve(process.cwd(), handoffDir, "NEXT_ACTIONS.md");
+  if (!fs.existsSync(file)) return [];
+
+  const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
+  const pending = [];
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const unchecked = line.match(/^\s*-\s*\[\s\]\s+(.*)$/);
+    if (!unchecked) continue;
+
+    const text = (unchecked[1] || "").trim();
+    if (!text) continue;
+    if (/^Run\s+[0-9a-f-]{36}:/i.test(text)) continue;
+
+    pending.push({ line: i + 1, raw: line, text });
+  }
+
+  return pending;
+}
+
+function markActionDone(handoffDir, action) {
+  const file = path.resolve(process.cwd(), handoffDir, "NEXT_ACTIONS.md");
+  if (!fs.existsSync(file)) return;
+
+  const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
+  const idx = lines.findIndex((line) => line === action.raw);
+  if (idx === -1) return;
+
+  const doneStamp = new Date().toISOString();
+  lines[idx] = lines[idx].replace(/^\s*-\s*\[\s\]\s+/, "- [x] ") + ` (auto:${doneStamp})`;
+  fs.writeFileSync(file, `${lines.join("\n").replace(/\n*$/, "\n")}`);
 }

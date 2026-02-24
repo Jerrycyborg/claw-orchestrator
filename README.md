@@ -99,10 +99,13 @@ bash ./scripts/setup.sh
 # 4) inspect runs
 node src/cli.js status
 
-# 5) optional: event-driven hook mode (stdin or --event-file)
+# 5) continue automatically from .ai/handoff/NEXT_ACTIONS.md
+node src/cli.js autopilot --summary --max-runs 3
+
+# 6) optional: event-driven hook mode (stdin or --event-file)
 echo '{"message":{"text":"Create release checklist"},"channelType":"dm"}' | node src/cli.js hook
 
-# 6) type check incremental TS migration path
+# 7) type check incremental TS migration path
 npm run typecheck
 ```
 
