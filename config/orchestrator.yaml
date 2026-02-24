@@ -13,4 +13,4 @@ routing:
   ambiguous_parallel: [[researcher, ops], architect]
 policy:
   block_on_high_severity: true
-  require_confidence_threshold: 0.7
+  require_confidence_threshold: 0.55
