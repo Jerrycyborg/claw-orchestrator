@@ -7,6 +7,13 @@ import { enforcePolicy } from "./policy.js";
 import { enforceChannelPolicy } from "./channel-policy.js";
 import { loadOrchestratorConfig } from "./config.js";
 
+function detectBuildMode(prompt) {
+  const p = (prompt || "").toLowerCase();
+  const existingSignals = ["update", "existing", "already", "continue", "refactor", "fix", "improve"];
+  const isExistingProject = existingSignals.some((s) => p.includes(s));
+  return isExistingProject ? "existing" : "new";
+}
+
 export function createRun(prompt, options = {}) {
   const loaded = loadOrchestratorConfig();
   const runtimeConfig = loaded.config;
@@ -48,7 +55,26 @@ export function createRun(prompt, options = {}) {
     };
   }
 
-  const pipeline = routeIntent(intent, runtimeConfig.routing || {});
+  let pipeline = routeIntent(intent, runtimeConfig.routing || {});
+  let buildMode = null;
+
+  if (intent === "build_change") {
+    buildMode = detectBuildMode(prompt);
+    pipeline = buildMode === "existing"
+      ? [
+          { stage: 1, mode: "sequential", roles: ["reviewer"] },
+          { stage: 2, mode: "sequential", roles: ["architect"] },
+          { stage: 3, mode: "sequential", roles: ["implementer"] },
+          { stage: 4, mode: "sequential", roles: ["reviewer"] }
+        ]
+      : [
+          { stage: 1, mode: "sequential", roles: ["researcher"] },
+          { stage: 2, mode: "sequential", roles: ["architect"] },
+          { stage: 3, mode: "sequential", roles: ["implementer"] },
+          { stage: 4, mode: "sequential", roles: ["reviewer"] }
+        ];
+  }
+
   const handoff = readHandoffSnapshot(options.handoffDir);
 
   const run = {
@@ -67,6 +93,12 @@ export function createRun(prompt, options = {}) {
     },
     notes: [
       "AAHP read set: STATUS, NEXT_ACTIONS, WORKFLOW, TRUST",
+      buildMode === "existing"
+        ? "Build mode: existing project -> pre-build reviewer checkpoint enabled"
+        : buildMode === "new"
+          ? "Build mode: new task -> researcher stage enabled before planning"
+          : "Build mode: standard",
+      "Post-build reviewer must cover both code quality and security findings",
       runtimeConfig.policy?.block_on_high_severity
         ? "Policy gate: block completion on high severity reviewer findings"
         : "Policy gate: high severity reviewer findings are advisory"
