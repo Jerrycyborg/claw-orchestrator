@@ -16,10 +16,21 @@
     "status": "node src/cli.js status",
     "aahp:check": "node src/cli.js aahp-check",
     "typecheck": "npx tsc -p tsconfig.json",
-    "test": "node src/test.js"
+    "test": "node src/test.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier \"src/**/*.{js,json}\" \"*.{js,json,md}\" \".github/workflows/*.{yml,yaml}\" --write",
+    "format:check": "prettier \"src/**/*.{js,json}\" \"*.{js,json,md}\" \".github/workflows/*.{yml,yaml}\" --check",
+    "lint-staged": "lint-staged",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@eslint/js": "^9.20.0",
     "@types/node": "^24.3.0",
+    "eslint": "^9.20.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.5.3",
     "typescript": "^5.9.2"
   },
   "keywords": [

@@ -3,9 +3,11 @@
 🧠 Multi-agent orchestration layer for OpenClaw.
 
 ## 🚀 What this project is
+
 `claw-orchestrator` is a standalone project that coordinates specialized agent roles from a single prompt and executes a predictable pipeline.
 
 Default role set:
+
 - 🔭 Researcher
 - 🏛️ Architect
 - ⚙️ Implementer
@@ -13,12 +15,14 @@ Default role set:
 - 🛡️ Ops
 
 It is designed to work with **AAHP-style handoffs** and supports both:
+
 - Stateless execution (current safe default)
 - Persistent role-session execution (when runtime supports it)
 
 ---
 
 ## ✅ Current status
+
 - Project scaffold created
 - Initial routing config added
 - Architecture + roadmap docs added
@@ -37,6 +41,7 @@ It is designed to work with **AAHP-style handoffs** and supports both:
 ---
 
 ## 🧩 Use cases
+
 - Route prompts to the right role sequence automatically
 - Enforce review gates before task completion
 - Maintain traceable run logs (who did what, when, with what confidence)
@@ -46,6 +51,7 @@ It is designed to work with **AAHP-style handoffs** and supports both:
 ---
 
 ## 🛠️ Planned MVP features
+
 - Prompt intent classifier ✅
 - Role pipeline router (sequential + parallel branches) ✅
 - Retry/escalation policy ⏳
@@ -62,23 +68,28 @@ It is designed to work with **AAHP-style handoffs** and supports both:
 ---
 
 ## 🔒 Security posture (current)
+
 Implemented now:
+
 - `.gitignore` for common local/secrets artifacts
 - No credentials in source files
 
 Implemented now:
+
 - Secret scanning in CI (gitleaks workflow)
 - `SECURITY.md` + reporting process
 - Prompt-time policy gate for secret/PII patterns
 - Sensitive-action approval flag (`--approve-sensitive`)
 
 Still required (next):
+
 - Optional pre-commit checks
 - More robust secret detectors and allowlist tuning
 
 ---
 
 ## 📁 Project structure
+
 - `docs/` architecture, roadmap, design notes
 - `src/` orchestrator core and execution adapters
 - `config/` routing, role templates, and bridge command examples
@@ -88,9 +99,12 @@ Still required (next):
 ---
 
 ## ▶️ Getting started (out-of-box)
+
 ```bash
 # 1) clone repo
-# 2) one-step setup (installs local skill + scripts)
+# 2) install deps + hooks
+npm install
+# 3) one-step setup (installs local skill + scripts)
 bash ./scripts/setup.sh
 
 # 3) run end-to-end orchestration with clean summary
@@ -105,11 +119,16 @@ node src/cli.js autopilot --summary --max-runs 3
 # 6) optional: event-driven hook mode (stdin or --event-file)
 echo '{"message":{"text":"Create release checklist"},"channelType":"dm"}' | node src/cli.js hook
 
-# 7) type check incremental TS migration path
+# 7) quality checks
+npm run lint
+npm run format:check
 npm run typecheck
 ```
+
+See `CONTRIBUTING.md` for full development guidelines.
 
 ---
 
 ## 🗺️ Next step
+
 Extend native plugin lifecycle wiring and observability for the OpenClaw API path, then expand TS migration from typed JS checks into fully migrated `.ts` modules.
