@@ -11,6 +11,7 @@ import { enforcePolicy } from "./policy.js";
 import { executeRun } from "./executor.js";
 import { enforceChannelPolicy } from "./channel-policy.js";
 import { eventToRunInput } from "./session-hook.js";
+import { resolveDispatchPlan } from "./adapters/openclaw-adapter.js";
 
 const c1 = classifyPrompt("Please research options and compare pros cons");
 assert.equal(c1.intent, Intents.RESEARCH_HEAVY);
@@ -60,6 +61,11 @@ assert.equal(hookInput.channelContext.kind, "dm");
 
 const policySecret = enforcePolicy("api_key=sk-1234567890abcdefghijklmnop");
 assert.equal(policySecret.ok, false);
+
+assert.equal(resolveDispatchPlan({ OPENCLAW_API_URL: "http://localhost:8080" }, false), "native-api");
+assert.equal(resolveDispatchPlan({}, true), "native-cli");
+assert.equal(resolveDispatchPlan({ OPENCLAW_ROLE_CMD: "echo hi" }, false), "legacy-shell-bridge");
+assert.equal(resolveDispatchPlan({}, false), "unavailable");
 
 const synced = syncRunToAahp(run, { handoffDir: handoff });
 assert.ok(fs.existsSync(synced.logFile));

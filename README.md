@@ -112,4 +112,4 @@ npm run typecheck
 ---
 
 ## 🗺️ Next step
-Harden native OpenClaw API execution (no shell bridge), extend hook registration in runtime plugin lifecycle, and expand TS migration from typed JS checks into fully migrated `.ts` modules.
+Extend native plugin lifecycle wiring and observability for the OpenClaw API path, then expand TS migration from typed JS checks into fully migrated `.ts` modules.

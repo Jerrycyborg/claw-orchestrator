@@ -33,4 +33,4 @@
 - [x] Stateless role executor adapter (simulation)
 - [x] OpenClaw adapter bridge (`--mode openclaw` + command template)
 - [x] Session-event hook entrypoint (`orchestrator hook`) for native plugin wiring path
-- [ ] Native OpenClaw API integration (without shell bridge)
+- [x] Native OpenClaw API integration path (shell bridge fallback only)
