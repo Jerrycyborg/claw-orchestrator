@@ -1,8 +1,41 @@
 import { Intents } from "./types.js";
 
-const SEC_WORDS = ["security", "secure", "hardening", "firewall", "ssh", "compliance", "audit", "risk", "policy", "config"]; 
-const RESEARCH_WORDS = ["research", "compare", "options", "evaluate", "benchmark", "pros", "cons", "market", "feasibility", "why"]; 
-const BUILD_WORDS = ["implement", "build", "create", "fix", "refactor", "code", "feature", "bug", "add", "develop"]; 
+const SEC_WORDS = [
+  "security",
+  "secure",
+  "hardening",
+  "firewall",
+  "ssh",
+  "compliance",
+  "audit",
+  "risk",
+  "policy",
+  "config"
+];
+const RESEARCH_WORDS = [
+  "research",
+  "compare",
+  "options",
+  "evaluate",
+  "benchmark",
+  "pros",
+  "cons",
+  "market",
+  "feasibility",
+  "why"
+];
+const BUILD_WORDS = [
+  "implement",
+  "build",
+  "create",
+  "fix",
+  "refactor",
+  "code",
+  "feature",
+  "bug",
+  "add",
+  "develop"
+];
 
 export function classifyPrompt(prompt) {
   const p = (prompt || "").toLowerCase();

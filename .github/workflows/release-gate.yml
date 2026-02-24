@@ -2,7 +2,7 @@ name: release-gate
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
 
 jobs:
@@ -20,6 +20,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Dependency audit (high+)
+        run: npm audit --audit-level=high
 
       - name: Release readiness gate
         run: npm run aahp:check && npm test && npm run typecheck

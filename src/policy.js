@@ -11,7 +11,16 @@ const PII_PATTERNS = [
 ];
 
 const SENSITIVE_ACTION_WORDS = [
-  "deploy", "production", "prod", "delete", "drop", "truncate", "rotate key", "config.apply", "update.run", "restart gateway"
+  "deploy",
+  "production",
+  "prod",
+  "delete",
+  "drop",
+  "truncate",
+  "rotate key",
+  "config.apply",
+  "update.run",
+  "restart gateway"
 ];
 
 export function scanPromptSafety(prompt) {
@@ -19,15 +28,21 @@ export function scanPromptSafety(prompt) {
   const text = prompt || "";
 
   for (const p of SECRET_PATTERNS) {
-    if (p.test(text)) findings.push({ severity: "high", type: "secret-pattern", pattern: p.toString() });
+    if (p.test(text))
+      findings.push({ severity: "high", type: "secret-pattern", pattern: p.toString() });
   }
   for (const p of PII_PATTERNS) {
-    if (p.test(text)) findings.push({ severity: "medium", type: "pii-pattern", pattern: p.toString() });
+    if (p.test(text))
+      findings.push({ severity: "medium", type: "pii-pattern", pattern: p.toString() });
   }
 
   const sensitiveAction = SENSITIVE_ACTION_WORDS.some((w) => text.toLowerCase().includes(w));
   if (sensitiveAction) {
-    findings.push({ severity: "medium", type: "sensitive-action", note: "Prompt appears to request sensitive operational action" });
+    findings.push({
+      severity: "medium",
+      type: "sensitive-action",
+      note: "Prompt appears to request sensitive operational action"
+    });
   }
 
   const high = findings.some((f) => f.severity === "high");

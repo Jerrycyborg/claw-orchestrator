@@ -18,7 +18,8 @@ export function getRun(id) {
 
 export function listRuns(limit = 10) {
   if (!fs.existsSync(RUN_DIR)) return [];
-  const files = fs.readdirSync(RUN_DIR)
+  const files = fs
+    .readdirSync(RUN_DIR)
     .filter((f) => f.endsWith(".json"))
     .map((f) => path.join(RUN_DIR, f));
 

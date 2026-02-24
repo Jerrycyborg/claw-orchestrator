@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import "./env.js";
+
 import fs from "fs";
 import path from "path";
 import { createRun, syncRunToAahp } from "./orchestrator.js";
@@ -23,10 +25,16 @@ if (cmd === "run") {
   const channelKind = parseChannelFlag(readFlag(args, "--channel") || "direct");
 
   if (!prompt.trim()) {
-    console.log("Usage: orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]");
+    console.log(
+      'Usage: orchestrator run --prompt "..." [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]'
+    );
     process.exit(1);
   }
-  const run = createRun(prompt, { handoffDir, approveSensitive, channelContext: { kind: channelKind } });
+  const run = createRun(prompt, {
+    handoffDir,
+    approveSensitive,
+    channelContext: { kind: channelKind }
+  });
   const out = { run };
 
   if (sync && run.status !== "blocked") out.sync = syncRunToAahp(run, { handoffDir });
@@ -51,11 +59,17 @@ if (cmd === "auto") {
   const channelKind = parseChannelFlag(readFlag(args, "--channel") || "direct");
 
   if (!prompt.trim()) {
-    console.log("Usage: orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]");
+    console.log(
+      'Usage: orchestrator auto --prompt "..." [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]'
+    );
     process.exit(1);
   }
 
-  const run = createRun(prompt, { handoffDir, approveSensitive, channelContext: { kind: channelKind } });
+  const run = createRun(prompt, {
+    handoffDir,
+    approveSensitive,
+    channelContext: { kind: channelKind }
+  });
   const out = { run };
 
   if (run.status !== "blocked") {
@@ -79,7 +93,9 @@ if (cmd === "hook") {
   const fallbackPrompt = readFlag(args, "--prompt") || "";
 
   if (!event && !fallbackPrompt.trim()) {
-    console.log("Usage: orchestrator hook [--event-file event.json|stdin] [--prompt \"...\"] [--approve-sensitive]");
+    console.log(
+      'Usage: orchestrator hook [--event-file event.json|stdin] [--prompt "..."] [--approve-sensitive]'
+    );
     process.exit(1);
   }
 
@@ -184,7 +200,9 @@ if (cmd === "status") {
     process.exit(0);
   }
   for (const r of runs) {
-    console.log(`- ${r.id} | ${r.status} | ${r.intent || "n/a"} | conf=${r.confidence ?? "n/a"} (${r.confidenceTag || "n/a"}) | ${r.createdAt}`);
+    console.log(
+      `- ${r.id} | ${r.status} | ${r.intent || "n/a"} | conf=${r.confidence ?? "n/a"} (${r.confidenceTag || "n/a"}) | ${r.createdAt}`
+    );
   }
   process.exit(0);
 }
@@ -211,7 +229,9 @@ if (cmd === "aahp-check") {
   process.exit(0);
 }
 
-console.log("Usage:\n  orchestrator auto --prompt \"...\" [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]\n  orchestrator autopilot [--handoff-dir <dir>] [--approve-sensitive] [--mode simulate|openclaw] [--max-runs N] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator run --prompt \"...\" [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator hook [--event-file event.json|stdin] [--prompt \"...\"] [--approve-sensitive]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]");
+console.log(
+  'Usage:\n  orchestrator auto --prompt "..." [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]\n  orchestrator autopilot [--handoff-dir <dir>] [--approve-sensitive] [--mode simulate|openclaw] [--max-runs N] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator run --prompt "..." [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator hook [--event-file event.json|stdin] [--prompt "..."] [--approve-sensitive]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]'
+);
 
 function readFlag(argv, flag) {
   const idx = argv.indexOf(flag);
@@ -246,7 +266,9 @@ function formatSummary(out) {
   ];
 
   for (const s of ex.stages || []) {
-    const roles = (s.results || []).map((r) => `${r.role}:${r.status}(x${r.attempts || 1})`).join(", ");
+    const roles = (s.results || [])
+      .map((r) => `${r.role}:${r.status}(x${r.attempts || 1})`)
+      .join(", ");
     lines.push(`- stage ${s.stage} [${s.mode}] ${roles}`);
   }
 

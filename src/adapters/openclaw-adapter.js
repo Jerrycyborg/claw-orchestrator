@@ -1,6 +1,10 @@
+import "../env.js";
+
 import fs from "fs";
 import path from "path";
 import { exec, execFile, execSync } from "child_process";
+import { getEnv } from "../env.js";
+import { logger } from "../logger.js";
 
 function hasOpenClawCli() {
   try {
@@ -49,16 +53,18 @@ function renderTemplate(template, ctx) {
 }
 
 export function resolveDispatchPlan(env = process.env, cliAvailable = hasOpenClawCli()) {
-  if (env.OPENCLAW_API_URL) return "native-api";
+  const e = getEnv(env);
+  if (e.OPENCLAW_API_URL) return "native-api";
   if (cliAvailable) return "native-cli";
-  if (env.OPENCLAW_ROLE_CMD) return "legacy-shell-bridge";
+  if (e.OPENCLAW_ROLE_CMD) return "legacy-shell-bridge";
   return "unavailable";
 }
 
 async function runNativeApi(ctx, rolePrompt) {
-  const baseUrl = process.env.OPENCLAW_API_URL;
-  const token = process.env.OPENCLAW_API_TOKEN;
-  const endpoint = process.env.OPENCLAW_API_ROLE_PATH || "/api/roles/execute";
+  const env = getEnv(process.env);
+  const baseUrl = env.OPENCLAW_API_URL;
+  const token = env.OPENCLAW_API_TOKEN;
+  const endpoint = env.OPENCLAW_API_ROLE_PATH || "/api/roles/execute";
 
   const res = await fetch(new URL(endpoint, baseUrl).toString(), {
     method: "POST",
@@ -113,7 +119,8 @@ async function runNativeCli(ctx, rolePrompt) {
 }
 
 async function runLegacyShellBridge(ctx, rolePrompt, rolePromptB64) {
-  const commandTemplate = process.env.OPENCLAW_ROLE_CMD;
+  const env = getEnv(process.env);
+  const commandTemplate = env.OPENCLAW_ROLE_CMD;
   const cmd = renderTemplate(commandTemplate, {
     ...ctx,
     rolePrompt,
@@ -137,6 +144,7 @@ export async function executeRole(ctx) {
   });
 
   const rolePromptB64 = Buffer.from(rolePrompt, "utf8").toString("base64");
+  const env = getEnv(process.env);
   const plan = resolveDispatchPlan(process.env, hasOpenClawCli());
 
   if (plan === "unavailable") {
@@ -189,18 +197,30 @@ export async function executeRole(ctx) {
     };
   }
 
-  if (process.env.OPENCLAW_ROLE_CMD) {
+  if (env.OPENCLAW_ROLE_CMD) {
     const shellResult = await runLegacyShellBridge(ctx, rolePrompt, rolePromptB64);
     return {
       role: ctx.role,
       status: shellResult.ok ? "ok" : "failed",
       adapter: "openclaw",
       dispatch: "legacy-shell-bridge",
-      note: shellResult.ok ? "Role executed via OPENCLAW_ROLE_CMD (fallback)" : "Role execution command failed",
+      note: shellResult.ok
+        ? "Role executed via OPENCLAW_ROLE_CMD (fallback)"
+        : "Role execution command failed",
       output: trim(shellResult.stdout),
       error: trim(shellResult.stderr || shellResult.error || "")
     };
   }
+
+  logger.warn(
+    {
+      role: ctx.role,
+      dispatch: "native-cli",
+      code: cliResult.code,
+      signal: cliResult.signal
+    },
+    "OpenClaw CLI dispatch failed"
+  );
 
   return {
     role: ctx.role,
