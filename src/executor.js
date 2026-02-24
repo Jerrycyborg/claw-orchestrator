@@ -23,6 +23,8 @@ export async function executeRun(run, options = {}) {
   };
 
   const executeRole = getRoleExecutor(options.mode);
+  const autoRemediate = options.autoRemediate !== false;
+  let remediationPasses = 0;
   saveRun(execution);
 
   for (const stage of run.pipeline || []) {
@@ -78,6 +80,64 @@ export async function executeRun(run, options = {}) {
     stageRecord.completedAt = new Date().toISOString();
     execution.stages.push(stageRecord);
     saveRun(execution);
+
+    if (autoRemediate && remediationPasses < 1 && shouldAutoRemediate(stageRecord)) {
+      remediationPasses += 1;
+      const remediationPrompt = buildRemediationPrompt(run.prompt, stageRecord);
+
+      for (const role of ["implementer", "reviewer"]) {
+        const remStage = {
+          stage: execution.stages.length + 1,
+          mode: "sequential",
+          roles: [role],
+          status: "running",
+          startedAt: new Date().toISOString(),
+          remediation: true,
+          results: []
+        };
+
+        const result = await executeRole(
+          /** @type {any} */ ({
+            role,
+            prompt: remediationPrompt,
+            intent: run.intent,
+            runId: run.id,
+            stageMode: "sequential",
+            attempt: 0
+          }),
+          options
+        );
+
+        result.attempts = 1;
+        remStage.results.push(result);
+
+        if (result && result.status === "failed") {
+          remStage.status = "failed";
+          remStage.completedAt = new Date().toISOString();
+          remStage.escalation = `Auto-remediation role '${role}' failed`;
+          execution.stages.push(remStage);
+          execution.status = "failed";
+          execution.completedAt = new Date().toISOString();
+          execution.escalation = remStage.escalation;
+          saveRun(execution);
+          return execution;
+        }
+
+        remStage.status = "completed";
+        remStage.completedAt = new Date().toISOString();
+        execution.stages.push(remStage);
+        saveRun(execution);
+
+        if (role === "reviewer" && shouldAutoRemediate(remStage)) {
+          execution.status = "failed";
+          execution.completedAt = new Date().toISOString();
+          execution.escalation =
+            "Auto-remediation completed but reviewer still reports high-severity/no-go findings";
+          saveRun(execution);
+          return execution;
+        }
+      }
+    }
   }
 
   execution.status = "completed";
@@ -85,4 +145,39 @@ export async function executeRun(run, options = {}) {
   saveRun(execution);
 
   return execution;
+}
+
+function shouldAutoRemediate(stageRecord) {
+  const hasReviewer = (stageRecord.roles || []).includes("reviewer");
+  if (!hasReviewer) return false;
+
+  const text = (stageRecord.results || [])
+    .map((r) => `${r?.output || ""} ${r?.error || ""}`)
+    .join("\n")
+    .toLowerCase();
+
+  if (!text.trim()) return false;
+  return (
+    text.includes("no_go") ||
+    text.includes("no-go") ||
+    text.includes("high") ||
+    text.includes("critical")
+  );
+}
+
+function buildRemediationPrompt(basePrompt, stageRecord) {
+  const reviewerText = (stageRecord.results || [])
+    .map((r) => `${r?.output || ""} ${r?.error || ""}`)
+    .join("\n")
+    .slice(0, 4000);
+
+  return [
+    basePrompt,
+    "",
+    "Auto-remediation instruction:",
+    "Fix all high-severity and no-go findings from reviewer output below, then rerun required validations and provide concise changed-files and residual risks.",
+    "",
+    "Reviewer findings:",
+    reviewerText
+  ].join("\n");
 }
