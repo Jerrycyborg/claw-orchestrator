@@ -195,6 +195,12 @@ See `CONTRIBUTING.md` for full development guidelines.
 
 ---
 
+## ✍️ Author
+
+Jerry — https://github.com/Jerrycyborg
+
+---
+
 ## 🗺️ Next step
 
 Extend native plugin lifecycle wiring and observability for the OpenClaw API path, then expand TS migration from typed JS checks into fully migrated `.ts` modules.

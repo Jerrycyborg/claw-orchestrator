@@ -250,7 +250,19 @@ if (cmd === "aahp-check") {
 }
 
 console.log(
-  'Usage:\n  orchestrator auto --prompt "..." [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]\n  orchestrator autopilot [--handoff-dir <dir>] [--approve-sensitive] [--mode simulate|openclaw] [--max-runs N] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator run --prompt "..." [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]\n  orchestrator hook [--event-file event.json|stdin] [--prompt "..."] [--approve-sensitive]\n  orchestrator status\n  orchestrator show --id <run-id>\n  orchestrator aahp-check [--handoff-dir <dir>]'
+  [
+    "Author: Jerry — https://github.com/Jerrycyborg",
+    "",
+    "Usage:",
+    '  orchestrator auto --prompt "..." [--handoff-dir <dir>] [--approve-sensitive] [--channel direct|group] [--summary]',
+    "  orchestrator autopilot [--handoff-dir <dir>] [--approve-sensitive] [--mode simulate|openclaw] [--max-runs N] [--max-retries N] [--channel direct|group] [--summary]",
+    '  orchestrator run --prompt "..." [--handoff-dir <dir>] [--sync-aahp] [--approve-sensitive] [--execute] [--mode simulate|openclaw] [--max-retries N] [--channel direct|group] [--summary]',
+    '  orchestrator hook [--event-file event.json|stdin] [--prompt "..."] [--approve-sensitive]',
+    "  orchestrator dashboard [--port N] [--open]",
+    "  orchestrator status",
+    "  orchestrator show --id <run-id>",
+    "  orchestrator aahp-check [--handoff-dir <dir>]"
+  ].join("\n")
 );
 
 function readFlag(argv, flag) {
