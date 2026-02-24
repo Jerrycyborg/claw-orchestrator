@@ -29,6 +29,7 @@
 - [x] Summary output for owner (`--summary`, hook summary)
 
 ## Phase 5 - Execution Runtime
+- [x] CI release gate (`npm run aahp:check && npm test && npm run typecheck`)
 - [x] Run state transitions (planned/running/completed/blocked)
 - [x] Stateless role executor adapter (simulation)
 - [x] OpenClaw adapter bridge (`--mode openclaw` + command template)

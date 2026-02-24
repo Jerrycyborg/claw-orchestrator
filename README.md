@@ -83,7 +83,7 @@ Still required (next):
 - `src/` orchestrator core and execution adapters
 - `config/` routing, role templates, and bridge command examples
 - `scripts/` local helper scripts
-- `.github/workflows/` CI/security checks
+- `.github/workflows/` CI/security checks (security scan + release gate)
 
 ---
 
