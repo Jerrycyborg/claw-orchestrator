@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claw Orchestrator Dashboard</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <div class="logo">🧩</div>
+        <div>
+          <div class="title">Claw Orchestrator</div>
+          <div class="sub">Pipeline Status UI</div>
+        </div>
+      </div>
+      <div class="controls">
+        <label>
+          Refresh
+          <select id="refresh">
+            <option value="0">Off</option>
+            <option value="1000">1s</option>
+            <option value="2000" selected>2s</option>
+            <option value="5000">5s</option>
+          </select>
+        </label>
+        <label>
+          Runs
+          <select id="limit">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+        <button id="reload">Reload</button>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="panel">
+        <div class="panelHeader">Run history</div>
+        <div id="runs" class="runs"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panelHeader">Run details</div>
+        <div id="detail" class="detail empty">Select a run on the left.</div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

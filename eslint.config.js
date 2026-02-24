@@ -21,6 +21,6 @@ export default [
     }
   },
   {
-    ignores: ["node_modules/**", ".orchestrator/**", ".ai/**"]
+    ignores: ["node_modules/**", ".orchestrator/**", ".ai/**", "dashboard/**"]
   }
 ];

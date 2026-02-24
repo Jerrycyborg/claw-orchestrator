@@ -193,6 +193,26 @@ if (cmd === "autopilot") {
   process.exit(0);
 }
 
+if (cmd === "dashboard") {
+  const port = Number(readFlag(args, "--port") || 3188);
+  const open = hasFlag(args, "--open");
+  const { startDashboard } = await import("./dashboard.js");
+  const out = startDashboard({ port });
+
+  if (open) {
+    // Best-effort: do not fail dashboard if open fails.
+    try {
+      const { execSync } = await import("child_process");
+      execSync(`xdg-open http://localhost:${out.port}`, { stdio: "ignore" });
+    } catch {
+      // ignore
+    }
+  }
+
+  // Server keeps the process alive.
+  await new Promise(() => {});
+}
+
 if (cmd === "status") {
   const runs = listRuns(10);
   if (!runs.length) {
