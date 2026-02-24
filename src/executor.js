@@ -1,4 +1,5 @@
 // @ts-check
+import { execSync } from "child_process";
 import { saveRun } from "./run-store.js";
 import { getRoleExecutor } from "./adapters/index.js";
 
@@ -25,6 +26,7 @@ export async function executeRun(run, options = {}) {
   const executeRole = getRoleExecutor(options.mode);
   const autoRemediate = options.autoRemediate !== false;
   let remediationPasses = 0;
+  const repoEvidenceBefore = captureRepoEvidence(run.prompt);
   saveRun(execution);
 
   for (const stage of run.pipeline || []) {
@@ -140,8 +142,26 @@ export async function executeRun(run, options = {}) {
     }
   }
 
+  const repoEvidenceAfter = captureRepoEvidence(run.prompt);
+  const evidenceGate = evaluateEvidenceGate(run.prompt, repoEvidenceBefore, repoEvidenceAfter);
+  if (!evidenceGate.ok) {
+    execution.status = "failed";
+    execution.completedAt = new Date().toISOString();
+    execution.escalation = evidenceGate.reason;
+    execution.evidence = {
+      before: repoEvidenceBefore,
+      after: repoEvidenceAfter
+    };
+    saveRun(execution);
+    return execution;
+  }
+
   execution.status = "completed";
   execution.completedAt = new Date().toISOString();
+  execution.evidence = {
+    before: repoEvidenceBefore,
+    after: repoEvidenceAfter
+  };
   saveRun(execution);
 
   return execution;
@@ -180,4 +200,44 @@ function buildRemediationPrompt(basePrompt, stageRecord) {
     "Reviewer findings:",
     reviewerText
   ].join("\n");
+}
+
+function captureRepoEvidence(prompt) {
+  const repoPath = inferRepoPath(prompt);
+  if (!repoPath) return null;
+
+  try {
+    const head = execSync("git rev-parse HEAD", { cwd: repoPath, encoding: "utf8" }).trim();
+    const short = execSync("git status --short", { cwd: repoPath, encoding: "utf8" }).trim();
+    return { repoPath, head, dirty: !!short };
+  } catch {
+    return null;
+  }
+}
+
+function inferRepoPath(prompt = "") {
+  const p = String(prompt).toLowerCase();
+  if (p.includes("openclaw-edgemesh") || p.includes("edgemesh")) {
+    return "/home/barboza/.openclaw/workspace/openclaw-edgemesh";
+  }
+  return null;
+}
+
+function evaluateEvidenceGate(prompt = "", before, after) {
+  const p = String(prompt).toLowerCase();
+  const requiresCodeChange = ["implement", "build", "wire", "add", "fix", "commit"].some((w) =>
+    p.includes(w)
+  );
+
+  if (!requiresCodeChange) return { ok: true };
+  if (!before || !after) return { ok: true };
+
+  const changed = before.head !== after.head || before.dirty !== after.dirty;
+  if (changed) return { ok: true };
+
+  return {
+    ok: false,
+    reason:
+      "Execution reported success but produced no repository evidence (no commit/state change)."
+  };
 }
