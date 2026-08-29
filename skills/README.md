@@ -44,6 +44,20 @@ Both honour the same gates. They differ in what they can prove afterwards.
 
 Use the runtime path when the audit trail matters. Use this one everywhere else.
 
+## Single source of truth
+
+These `SKILL.md` files are the source. `config/roles/*.md` — the templates the
+Node path loads via `loadRoleTemplate()` — are **generated from them**:
+
+```bash
+npm run roles:gen      # regenerate after editing a SKILL.md
+npm run roles:check    # fails if they are stale (runs in release-gate)
+```
+
+Edit the skill, never the generated template. The generated files carry a
+do-not-edit banner and the drift check runs in CI, so the two paths cannot
+diverge silently.
+
 ## Data handling
 
 Every skill carries `references/data-handling.md` and is instructed to run its
