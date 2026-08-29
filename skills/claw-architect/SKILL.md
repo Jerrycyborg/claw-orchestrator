@@ -28,7 +28,7 @@ prod, delete, drop, truncate, rotate-key, restart-gateway are sensitive actions
 5. **Rung 5 — does not exist.**
 
 Never `cat` a log, a support bundle, a full config export, or any `.env`.
-`.env.example` for variable *names* is fine; `.env` for their values is not.
+`.env.example` for variable _names_ is fine; `.env` for their values is not.
 Never read `~/.ssh/id_*`, `~/.aws/credentials`, `*.pem`/`*.key`/`*.p12`,
 `~/.codex/auth.json`, `~/.claude/.credentials.json`, `/etc/shadow`.
 Never put a credential on a command line — shell history and `ps`.

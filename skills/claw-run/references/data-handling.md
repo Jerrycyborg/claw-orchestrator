@@ -7,11 +7,11 @@ code; on the skill path **you** enforce them. Same rules, both paths.
 
 Scan the task text and any file you are about to open for:
 
-| Class | Patterns (from `src/policy.js`) | Action |
-|---|---|---|
-| **Secret** | `api_key`/`secret`/`token`/`password` assignments, `sk-…`, `ghp_…`, `-----BEGIN … PRIVATE KEY-----` | **high — stop.** Name the field, do not echo the value, recommend rotation, treat as compromised, continue the task without it |
-| **PII** | email addresses, 10–15 digit numbers | **medium — proceed, redact in output** |
-| **Sensitive action** | deploy, production, prod, delete, drop, truncate, rotate key, restart gateway | **medium — proceed to a plan, stop before executing.** Ops role decides go/no-go |
+| Class                | Patterns (from `src/policy.js`)                                                                     | Action                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Secret**           | `api_key`/`secret`/`token`/`password` assignments, `sk-…`, `ghp_…`, `-----BEGIN … PRIVATE KEY-----` | **high — stop.** Name the field, do not echo the value, recommend rotation, treat as compromised, continue the task without it |
+| **PII**              | email addresses, 10–15 digit numbers                                                                | **medium — proceed, redact in output**                                                                                         |
+| **Sensitive action** | deploy, production, prod, delete, drop, truncate, rotate key, restart gateway                       | **medium — proceed to a plan, stop before executing.** Ops role decides go/no-go                                               |
 
 `block_on_high_severity: true` in `config/orchestrator.yaml` means a high finding
 halts the run. Honour that here: a high finding ends the stage with a stated
@@ -38,7 +38,7 @@ whole `.env`. If a task genuinely needs that depth, say so and stop.
 `~/.codex/auth.json`, `~/.claude/.credentials.json`, any `*.pem` / `*.key` /
 `*.p12`, `/etc/shadow`, browser cookie stores, CI secret files.
 
-Reading `.env.example` to learn *which* variables exist is correct and expected.
+Reading `.env.example` to learn _which_ variables exist is correct and expected.
 Reading `.env` to learn their values is not.
 
 ## Credentials on command lines

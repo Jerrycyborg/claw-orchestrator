@@ -8,14 +8,14 @@ and `src/policy.js` — but as instructions rather than a Node process, so they
 work in Claude Code and the Codex CLI on any machine, with no checkout and no
 orchestrator running.
 
-| Skill | Role |
-|---|---|
-| `/claw-run` | Classify intent → route → run stages → report. The entry point. |
-| `/claw-researcher` | Options, prior art, build-vs-adopt, recommendation with risks |
-| `/claw-architect` | Decomposition, contracts, data flow, failure modes, test matrix |
-| `/claw-implementer` | Build it, test it, hold the scope |
-| `/claw-reviewer` | Correctness + security, severity-classified, go/no-go |
-| `/claw-ops` | Rollout, pre-flight, what to watch, rollback, go/no-go |
+| Skill               | Role                                                            |
+| ------------------- | --------------------------------------------------------------- |
+| `/claw-run`         | Classify intent → route → run stages → report. The entry point. |
+| `/claw-researcher`  | Options, prior art, build-vs-adopt, recommendation with risks   |
+| `/claw-architect`   | Decomposition, contracts, data flow, failure modes, test matrix |
+| `/claw-implementer` | Build it, test it, hold the scope                               |
+| `/claw-reviewer`    | Correctness + security, severity-classified, go/no-go           |
+| `/claw-ops`         | Rollout, pre-flight, what to watch, rollback, go/no-go          |
 
 ## Install
 
@@ -33,14 +33,14 @@ Re-run after pulling changes. Nothing to build, no dependencies.
 
 Both honour the same gates. They differ in what they can prove afterwards.
 
-| | Skill path (this) | Node path (`scripts/orchestrate.sh`) |
-|---|---|---|
-| Needs a checkout | no | yes |
-| Needs Node | no | yes |
-| Works in Codex / other agents | yes | via adapter only |
-| Policy gates | enforced by instruction | enforced in code |
-| Run IDs, audit ledger, traces | no | yes |
-| Dashboard | no | yes |
+|                               | Skill path (this)       | Node path (`scripts/orchestrate.sh`) |
+| ----------------------------- | ----------------------- | ------------------------------------ |
+| Needs a checkout              | no                      | yes                                  |
+| Needs Node                    | no                      | yes                                  |
+| Works in Codex / other agents | yes                     | via adapter only                     |
+| Policy gates                  | enforced by instruction | enforced in code                     |
+| Run IDs, audit ledger, traces | no                      | yes                                  |
+| Dashboard                     | no                      | yes                                  |
 
 Use the runtime path when the audit trail matters. Use this one everywhere else.
 

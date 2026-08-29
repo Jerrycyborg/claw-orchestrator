@@ -28,7 +28,7 @@ prod, delete, drop, truncate, rotate-key, restart-gateway are sensitive actions
 5. **Rung 5 — does not exist.**
 
 Never `cat` a log, a support bundle, a full config export, or any `.env`.
-`.env.example` for variable *names* is fine; `.env` for their values is not.
+`.env.example` for variable _names_ is fine; `.env` for their values is not.
 Never read `~/.ssh/id_*`, `~/.aws/credentials`, `*.pem`/`*.key`/`*.p12`,
 `~/.codex/auth.json`, `~/.claude/.credentials.json`, `/etc/shadow`.
 Never put a credential on a command line — shell history and `ps`.
@@ -53,12 +53,13 @@ state, ordering assumptions, TOCTOU. Resource lifetime: opened and not closed,
 acquired and not released.
 
 **3. Security pass.** Walk the trust boundaries the Architect marked.
-   - **Input** — validated at the boundary or deep inside? Bounded in length?
-   - **Injection** — SQL, shell, path traversal, template, deserialization.
-   - **AuthN/AuthZ** — is the check present on *every* path, including the new one?
-   - **Secrets** — hardcoded, logged, in an error message, in a URL, in a commit?
-   - **Crypto** — hand-rolled, or a wrong mode, or a missing verification step?
-   - **Dependencies** — new ones added? Pinned? Known advisories?
+
+- **Input** — validated at the boundary or deep inside? Bounded in length?
+- **Injection** — SQL, shell, path traversal, template, deserialization.
+- **AuthN/AuthZ** — is the check present on _every_ path, including the new one?
+- **Secrets** — hardcoded, logged, in an error message, in a URL, in a commit?
+- **Crypto** — hand-rolled, or a wrong mode, or a missing verification step?
+- **Dependencies** — new ones added? Pinned? Known advisories?
 
 **4. Edge cases.** What happens under empty input, maximum input, concurrent
 calls, a partial failure, a retry, a restart mid-operation?
@@ -68,12 +69,12 @@ Delete a line of logic mentally — does a test go red? If not, say so.
 
 **6. Classify.** Be strict and be honest:
 
-| Severity | Meaning |
-|---|---|
-| **high** | Exploitable, data-losing, or wrong in normal operation. **Blocks** — matches `block_on_high_severity: true` |
-| **medium** | Wrong under a reachable but non-default condition |
-| **low** | Real but bounded; correctness unaffected |
-| **nit** | Style or clarity. Never blocks. Cap these — a wall of nits buries the real finding |
+| Severity   | Meaning                                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------- |
+| **high**   | Exploitable, data-losing, or wrong in normal operation. **Blocks** — matches `block_on_high_severity: true` |
+| **medium** | Wrong under a reachable but non-default condition                                                           |
+| **low**    | Real but bounded; correctness unaffected                                                                    |
+| **nit**    | Style or clarity. Never blocks. Cap these — a wall of nits buries the real finding                          |
 
 ## Output contract
 

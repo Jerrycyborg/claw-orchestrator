@@ -27,6 +27,8 @@
     "format:check": "prettier \"src/**/*.{js,json}\" \"*.{js,json,md}\" \".github/workflows/*.{yml,yaml}\" --check",
     "lint-staged": "lint-staged",
     "secret:scan": "node scripts/secret-scan.js",
+    "roles:gen": "node scripts/gen-role-prompts.js",
+    "roles:check": "node scripts/gen-role-prompts.js --check",
     "prepare": "husky"
   },
   "devDependencies": {

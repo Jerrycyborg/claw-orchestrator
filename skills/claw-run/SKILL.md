@@ -30,7 +30,7 @@ prod, delete, drop, truncate, rotate-key, restart-gateway are sensitive actions
 5. **Rung 5 — does not exist.**
 
 Never `cat` a log, a support bundle, a full config export, or any `.env`.
-`.env.example` for variable *names* is fine; `.env` for their values is not.
+`.env.example` for variable _names_ is fine; `.env` for their values is not.
 Never read `~/.ssh/id_*`, `~/.aws/credentials`, `*.pem`/`*.key`/`*.p12`,
 `~/.codex/auth.json`, `~/.claude/.credentials.json`, `/etc/shadow`.
 Never put a credential on a command line — shell history and `ps`.
@@ -53,12 +53,12 @@ Score the task against these word sets (from `src/classifier.js`):
 
 Apply in order:
 
-| Condition | Intent |
-|---|---|
-| `security ≥ 2`, or `security ≥ 1` with no build and no research hits | `security_ops` |
-| `research ≥ 2` and `build ≤ 1` | `research_heavy` |
-| `build ≥ 1` | `build_change` |
-| otherwise | `ambiguous_parallel` (confidence 0.55) |
+| Condition                                                            | Intent                                 |
+| -------------------------------------------------------------------- | -------------------------------------- |
+| `security ≥ 2`, or `security ≥ 1` with no build and no research hits | `security_ops`                         |
+| `research ≥ 2` and `build ≤ 1`                                       | `research_heavy`                       |
+| `build ≥ 1`                                                          | `build_change`                         |
+| otherwise                                                            | `ambiguous_parallel` (confidence 0.55) |
 
 **State the intent and your confidence before proceeding.** Below the
 `require_confidence_threshold: 0.55` in `config/orchestrator.yaml`, ask the user
@@ -68,12 +68,12 @@ which route they want instead of guessing.
 
 From `config/orchestrator.yaml`:
 
-| Intent | Sequence |
-|---|---|
-| `research_heavy` | **claw-researcher** → **claw-architect** |
-| `build_change` | **claw-architect** → **claw-implementer** → **claw-reviewer** |
-| `security_ops` | **claw-ops** → **claw-reviewer** |
-| `ambiguous_parallel` | **claw-researcher** ∥ **claw-ops**, then **claw-architect** |
+| Intent               | Sequence                                                      |
+| -------------------- | ------------------------------------------------------------- |
+| `research_heavy`     | **claw-researcher** → **claw-architect**                      |
+| `build_change`       | **claw-architect** → **claw-implementer** → **claw-reviewer** |
+| `security_ops`       | **claw-ops** → **claw-reviewer**                              |
+| `ambiguous_parallel` | **claw-researcher** ∥ **claw-ops**, then **claw-architect**   |
 
 For `ambiguous_parallel`, run the two independent roles before either informs
 the other — that parallelism is the point; do not collapse it into a sequence.

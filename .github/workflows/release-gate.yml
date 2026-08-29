@@ -24,5 +24,8 @@ jobs:
       - name: Dependency audit (high+)
         run: npm audit --audit-level=high
 
+      - name: Role template drift check
+        run: npm run roles:check
+
       - name: Release readiness gate
         run: npm run aahp:check && npm test && npm run typecheck

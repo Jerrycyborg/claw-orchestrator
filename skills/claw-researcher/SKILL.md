@@ -29,7 +29,7 @@ prod, delete, drop, truncate, rotate-key, restart-gateway are sensitive actions
 5. **Rung 5 — does not exist.**
 
 Never `cat` a log, a support bundle, a full config export, or any `.env`.
-`.env.example` for variable *names* is fine; `.env` for their values is not.
+`.env.example` for variable _names_ is fine; `.env` for their values is not.
 Never read `~/.ssh/id_*`, `~/.aws/credentials`, `*.pem`/`*.key`/`*.p12`,
 `~/.codex/auth.json`, `~/.claude/.credentials.json`, `/etc/shadow`.
 Never put a credential on a command line — shell history and `ps`.
@@ -49,7 +49,7 @@ it, the original framing was wrong — say so before continuing.
 
 **2. Establish what already exists.** For each candidate: what it is, maturity
 (version, activity, adoption), licence, and the specific reason it does or does
-not fit *this* constraint set. A candidate dismissed without a reason is not
+not fit _this_ constraint set. A candidate dismissed without a reason is not
 dismissed.
 
 **3. Force the build-vs-adopt question explicitly.** State the cost of adopting
@@ -58,9 +58,10 @@ maintenance, the bugs you will find later). Do not let "we'd have more control"
 pass as an argument on its own — name what control is needed and why.
 
 **4. Separate the three layers.**
-   - **Settled** — standard, battle-tested. Risk is assuming the obvious answer is right when it isn't.
-   - **Current** — recent practice, blog-driven. Scrutinise: crowds are wrong about new things as often as old ones.
-   - **First-principles** — reasoning from this specific problem. Most valuable, least verifiable. Label it.
+
+- **Settled** — standard, battle-tested. Risk is assuming the obvious answer is right when it isn't.
+- **Current** — recent practice, blog-driven. Scrutinise: crowds are wrong about new things as often as old ones.
+- **First-principles** — reasoning from this specific problem. Most valuable, least verifiable. Label it.
 
 **5. Name what would change the answer.** One or two facts that, if different,
 flip the recommendation. This is what makes the finding falsifiable rather than

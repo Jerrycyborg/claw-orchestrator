@@ -28,7 +28,7 @@ prod, delete, drop, truncate, rotate-key, restart-gateway are sensitive actions
 5. **Rung 5 — does not exist.**
 
 Never `cat` a log, a support bundle, a full config export, or any `.env`.
-`.env.example` for variable *names* is fine; `.env` for their values is not.
+`.env.example` for variable _names_ is fine; `.env` for their values is not.
 Never read `~/.ssh/id_*`, `~/.aws/credentials`, `*.pem`/`*.key`/`*.p12`,
 `~/.codex/auth.json`, `~/.claude/.credentials.json`, `/etc/shadow`.
 Never put a credential on a command line — shell history and `ps`.
@@ -48,11 +48,12 @@ users, stored data, money, access control? Blast radius sets how much of the
 rest of this matters.
 
 **2. Is it reversible?** Three categories, and they decide everything downstream:
-   - **Reversible** — redeploy the previous version and it's over.
-   - **Reversible with effort** — a data migration with a written down-path.
-   - **Irreversible** — deleted data, sent messages, executed orders, rotated
-     credentials, anything a third party has already acted on. **These need
-     explicit human authorisation. Never assume it.**
+
+- **Reversible** — redeploy the previous version and it's over.
+- **Reversible with effort** — a data migration with a written down-path.
+- **Irreversible** — deleted data, sent messages, executed orders, rotated
+  credentials, anything a third party has already acted on. **These need
+  explicit human authorisation. Never assume it.**
 
 **3. Pre-flight checks.** What must be true before starting. Each one a command
 or an observation with a stated expected result — not "check the DB is healthy"
